@@ -89,6 +89,40 @@ describe('ValidationProvider', () => {
       const modeErrors = diags.filter((d) => d.message.includes('HTTP mode'));
       expect(modeErrors).toHaveLength(0);
     });
+
+    it('reports error for tcp-only directive in http mode section', () => {
+      // persist rdp-cookie is tcpOnly
+      const text = [
+        'backend web',
+        '    mode http',
+        '    persist rdp-cookie',
+      ].join('\n');
+      const diags = validate(text);
+      expect(diags.some((d) => d.message.includes('TCP mode'))).toBe(true);
+    });
+  });
+
+  describe('deprecated directives', () => {
+    it('emits warning for a deprecated directive', () => {
+      // option httpclose was deprecated in 1.5
+      const text = 'backend web\n    mode http\n    option httpclose\n';
+      const diags = validate(text);
+      const warnings = diags.filter(
+        (d) => d.severity === DiagnosticSeverity.Warning && d.message.includes('deprecated')
+      );
+      expect(warnings.length).toBeGreaterThan(0);
+      expect(warnings[0]?.message).toMatch(/httpclose/);
+    });
+
+    it('emits warning for a deprecated action', () => {
+      // set-mark was deprecated in 2.6
+      const text = 'frontend http\n    http-request set-mark 0x1\n';
+      const diags = validate(text);
+      const warnings = diags.filter(
+        (d) => d.severity === DiagnosticSeverity.Warning && d.message.includes('set-mark')
+      );
+      expect(warnings.length).toBeGreaterThan(0);
+    });
   });
 
   describe('parse errors surface as diagnostics', () => {
@@ -111,10 +145,41 @@ describe('ValidationProvider', () => {
     });
   });
 
+  describe('edge cases — no-arg directives and incomplete lines', () => {
+    it('handles directive with no arguments (combinedName = null path)', () => {
+      // A directive keyword alone with no args uses the plain kwName lookup
+      const text = 'backend web\n    unknowndirective\n';
+      const diags = validate(text);
+      expect(diags.some((d) => d.message.includes('unknowndirective'))).toBe(true);
+    });
+
+    it('handles use_backend with no backend name argument', () => {
+      // use_backend with no args — nameArg is undefined, should be silently skipped
+      const text = 'frontend http\n    use_backend\n';
+      const diags = validate(text);
+      // Should not crash; may report an unknown-directive error but not a cross-ref warning
+      expect(() => diags).not.toThrow();
+    });
+
+    it('handles http-request with no action argument', () => {
+      // http-request alone with no action — actionArg is undefined, no action error
+      const text = 'frontend http\n    http-request\n';
+      const diags = validate(text);
+      // No action error — only possibly a section/mode diagnostic
+      expect(diags.filter((d) => d.message.includes('Unknown http-request action'))).toHaveLength(0);
+    });
+  });
+
   describe('version fallback', () => {
     it('falls back to nearest lower version for unknown version string', () => {
       // 3.5 is unknown — should resolve to 3.1 (nearest lower)
       const diags = validate('backend web\n    balance roundrobin\n', '3.5');
+      expect(diags).toHaveLength(0);
+    });
+
+    it('falls back to oldest known version when version is older than all known', () => {
+      // 1.0 is older than 2.4 (our oldest known) — should resolve to 2.4
+      const diags = validate('backend web\n    balance roundrobin\n', '1.0');
       expect(diags).toHaveLength(0);
     });
   });

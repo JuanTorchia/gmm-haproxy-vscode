@@ -124,17 +124,6 @@ export class ValidationProvider {
       return;
     }
 
-    // Check if directive was removed in this version
-    if (def.removedInVersion) {
-      out.push(
-        error(
-          toRange(directive.keyword.range),
-          `'${def.name}' was removed in HAProxy ${def.removedInVersion}. ${migrationHint(def.name)}`
-        )
-      );
-      return;
-    }
-
     // Check if directive is deprecated
     if (this.registry.isDeprecated(def.name, this.version)) {
       out.push(

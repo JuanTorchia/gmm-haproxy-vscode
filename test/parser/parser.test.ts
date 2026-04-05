@@ -77,4 +77,42 @@ describe('HaproxyParser', () => {
     expect(directive?.args).toHaveLength(3);
     expect(directive?.args[2]?.value).toBe('hello world');
   });
+
+  it('handles single-quoted string arguments', () => {
+    const text = `backend web\n    http-request set-header X-Custom 'hello world'\n`;
+    const doc = parser.parse(text, 'test://single-quoted');
+    const directive = doc.sections[0]?.directives[0];
+    expect(directive?.args[2]?.value).toBe('hello world');
+  });
+
+  it('handles escaped characters inside quoted strings', () => {
+    const text = `backend web\n    http-request set-header X-Msg "hello \\"world\\""\n`;
+    const doc = parser.parse(text, 'test://escape');
+    const directive = doc.sections[0]?.directives[0];
+    // Value should have the escaped quotes stripped
+    expect(directive?.args[2]?.value).toContain('world');
+  });
+
+  it('stores token ranges with correct column offsets', () => {
+    // 'balance' starts at col 4 (4 spaces indentation)
+    const text = 'backend web\n    balance roundrobin\n';
+    const doc = parser.parse(text, 'test://range');
+    const directive = doc.sections[0]?.directives[0];
+    expect(directive?.keyword.range.startCharacter).toBe(4);
+    expect(directive?.keyword.range.endCharacter).toBe(11);
+  });
+
+  it('handles CRLF line endings', () => {
+    const text = 'backend web\r\n    balance roundrobin\r\n';
+    const doc = parser.parse(text, 'test://crlf');
+    expect(doc.sections).toHaveLength(1);
+    expect(doc.sections[0]?.directives[0]?.keyword.value).toBe('balance');
+  });
+
+  it('ignores comment-only lines', () => {
+    const text = 'backend web\n    # this is a comment\n    balance roundrobin\n';
+    const doc = parser.parse(text, 'test://comment-line');
+    expect(doc.sections[0]?.directives).toHaveLength(1);
+    expect(doc.sections[0]?.directives[0]?.keyword.value).toBe('balance');
+  });
 });
