@@ -385,4 +385,219 @@ describe('ValidationProvider', () => {
       expect(refDiags).toHaveLength(0);
     });
   });
+
+  describe('special sections — no false positives', () => {
+    it('peers section: peer directive is valid', () => {
+      const text = 'peers haproxy-peers\n    peer node1 10.0.0.1:1024\n';
+      const diags = validate(text).filter((d) => d.message.includes('peer'));
+      expect(diags).toHaveLength(0);
+    });
+
+    it('peers section: server directive is valid', () => {
+      const text = 'peers haproxy-peers\n    server node1 10.0.0.1:1024\n';
+      expect(validate(text).filter((d) => d.message.toLowerCase().includes('unknown'))).toHaveLength(0);
+    });
+
+    it('resolvers section: nameserver directive is valid', () => {
+      const text = 'resolvers dns\n    nameserver ns1 8.8.8.8:53\n';
+      expect(validate(text).filter((d) => d.message.includes('nameserver'))).toHaveLength(0);
+    });
+
+    it('resolvers section: hold and timeout directives are valid', () => {
+      const text = [
+        'resolvers dns',
+        '    nameserver ns1 8.8.8.8:53',
+        '    timeout retry 1s',
+        '    hold valid 10s',
+      ].join('\n');
+      expect(validate(text).filter((d) => d.message.toLowerCase().includes('unknown'))).toHaveLength(0);
+    });
+
+    it('userlist section: user and group directives are valid', () => {
+      const text = [
+        'userlist admins',
+        '    user alice password $6$salt$hash groups admin',
+        '    group admin users alice',
+      ].join('\n');
+      expect(validate(text).filter((d) => d.message.toLowerCase().includes('unknown'))).toHaveLength(0);
+    });
+
+    it('mailers section: mailer directive is valid', () => {
+      const text = 'mailers smtp\n    mailer relay1 10.0.0.1:25\n';
+      expect(validate(text).filter((d) => d.message.includes('mailer'))).toHaveLength(0);
+    });
+
+    it('ring section: server and maxlen are valid', () => {
+      const text = [
+        'ring myring',
+        '    maxlen 1024',
+        '    server loghost 10.0.0.1:514',
+      ].join('\n');
+      expect(validate(text).filter((d) => d.message.toLowerCase().includes('unknown'))).toHaveLength(0);
+    });
+
+    it('cache section: total-max-size and max-age are valid', () => {
+      const text = 'cache webcache\n    total-max-size 64\n    max-age 3600\n';
+      expect(validate(text).filter((d) => d.message.toLowerCase().includes('unknown'))).toHaveLength(0);
+    });
+
+    it('program section: command is valid', () => {
+      const text = 'program agent\n    command /usr/bin/haproxy-agent\n';
+      expect(validate(text).filter((d) => d.message.includes('command'))).toHaveLength(0);
+    });
+
+    it('http-errors section: errorfile is valid', () => {
+      const text = 'http-errors myerrors\n    errorfile 503 /etc/haproxy/errors/503.http\n';
+      expect(validate(text).filter((d) => d.message.includes('errorfile'))).toHaveLength(0);
+    });
+
+    it('log-forward section: dgram-bind and log are valid', () => {
+      const text = [
+        'log-forward syslog-fwd',
+        '    dgram-bind 127.0.0.1:514',
+        '    log 10.0.0.1:514 local0',
+      ].join('\n');
+      expect(validate(text).filter((d) => d.message.toLowerCase().includes('unknown'))).toHaveLength(0);
+    });
+  });
+
+  describe('per-version validation — HAProxy 2.4', () => {
+    const v = '2.4';
+
+    it('accepts balance roundrobin (valid since 1.0)', () => {
+      expect(validate('backend web\n    balance roundrobin\n', v)).toHaveLength(0);
+    });
+
+    it('errors on reqrep (removed in 2.4)', () => {
+      const d = validate('frontend http\n    reqrep ^Host:\\ (.*) Host:\\ \\1\n', v)
+        .filter((d) => d.message.includes('reqrep'));
+      expect(d.length).toBeGreaterThan(0);
+      expect(d[0]?.severity).toBe(DiagnosticSeverity.Error);
+    });
+
+    it('errors on rsprep (removed in 2.4)', () => {
+      const d = validate('backend web\n    rsprep ^Server:\\ .* Server:\\ HAProxy\n', v)
+        .filter((d) => d.message.includes('rsprep'));
+      expect(d.length).toBeGreaterThan(0);
+    });
+
+    it('set-mark action has no deprecation warning in 2.4 (deprecated since 2.6)', () => {
+      const d = validate('frontend http\n    http-request set-mark 0x1\n', v)
+        .filter((d) => d.severity === DiagnosticSeverity.Warning && d.message.includes('set-mark'));
+      expect(d).toHaveLength(0);
+    });
+
+    it('option httpclose emits deprecation warning (deprecated since 1.5)', () => {
+      const d = validate('backend web\n    option httpclose\n', v)
+        .filter((d) => d.severity === DiagnosticSeverity.Warning);
+      expect(d.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('per-version validation — HAProxy 2.6', () => {
+    const v = '2.6';
+
+    it('accepts balance roundrobin', () => {
+      expect(validate('backend web\n    balance roundrobin\n', v)).toHaveLength(0);
+    });
+
+    it('errors on reqrep (still removed in 2.6)', () => {
+      const d = validate('frontend http\n    reqrep ^Host:\\ (.*) Host:\\ \\1\n', v)
+        .filter((d) => d.message.includes('reqrep'));
+      expect(d.length).toBeGreaterThan(0);
+    });
+
+    it('set-mark action emits deprecation warning (deprecated since 2.6)', () => {
+      const d = validate('frontend http\n    http-request set-mark 0x1\n', v)
+        .filter((d) => d.severity === DiagnosticSeverity.Warning && d.message.includes('set-mark'));
+      expect(d.length).toBeGreaterThan(0);
+    });
+
+    it('set-tos action emits deprecation warning (deprecated since 2.6)', () => {
+      const d = validate('frontend http\n    http-request set-tos 0x10\n', v)
+        .filter((d) => d.severity === DiagnosticSeverity.Warning && d.message.includes('set-tos'));
+      expect(d.length).toBeGreaterThan(0);
+    });
+
+    it('valid http-request deny has no errors', () => {
+      expect(validate('frontend http\n    http-request deny\n', v)
+        .filter((d) => d.message.includes('deny'))).toHaveLength(0);
+    });
+  });
+
+  describe('per-version validation — HAProxy 2.8', () => {
+    const v = '2.8';
+
+    it('accepts known directives', () => {
+      expect(validate('backend web\n    balance leastconn\n', v)).toHaveLength(0);
+    });
+
+    it('errors on reqrep (still removed in 2.8)', () => {
+      const d = validate('frontend http\n    reqrep ^Host:\\ (.*) Host:\\ \\1\n', v)
+        .filter((d) => d.message.includes('reqrep'));
+      expect(d.length).toBeGreaterThan(0);
+    });
+
+    it('set-mark action still emits deprecation warning in 2.8', () => {
+      const d = validate('frontend http\n    http-request set-mark 0x1\n', v)
+        .filter((d) => d.severity === DiagnosticSeverity.Warning);
+      expect(d.length).toBeGreaterThan(0);
+    });
+
+    it('cross-reference validation works in 2.8', () => {
+      const text = 'frontend http\n    use_backend missing\n';
+      const d = validate(text, v).filter((d) => d.message.includes('missing'));
+      expect(d).toHaveLength(1);
+      expect(d[0]?.severity).toBe(DiagnosticSeverity.Warning);
+    });
+  });
+
+  describe('per-version validation — HAProxy 3.0', () => {
+    const v = '3.0';
+
+    it('accepts known directives', () => {
+      expect(validate('backend web\n    balance source\n', v)).toHaveLength(0);
+    });
+
+    it('errors on unknown directive', () => {
+      const d = validate('backend web\n    notreal foo\n', v)
+        .filter((d) => d.message.toLowerCase().includes('unknown'));
+      expect(d.length).toBeGreaterThan(0);
+    });
+
+    it('mode http + http-request works in 3.0', () => {
+      const text = 'frontend http\n    mode http\n    http-request deny\n';
+      expect(validate(text, v).filter((d) => d.message.includes('HTTP mode'))).toHaveLength(0);
+    });
+  });
+
+  describe('per-version validation — HAProxy 3.1 (default)', () => {
+    it('accepts balance roundrobin', () => {
+      expect(validate('backend web\n    balance roundrobin\n')).toHaveLength(0);
+    });
+
+    it('errors on reqrep (removed since 2.4)', () => {
+      const d = validate('frontend http\n    reqrep ^Host:\\ (.*) Host:\\ \\1\n')
+        .filter((d) => d.message.includes('reqrep'));
+      expect(d.length).toBeGreaterThan(0);
+    });
+
+    it('set-mark action emits deprecation warning in 3.1', () => {
+      const d = validate('frontend http\n    http-request set-mark 0x1\n')
+        .filter((d) => d.severity === DiagnosticSeverity.Warning);
+      expect(d.length).toBeGreaterThan(0);
+    });
+
+    it('section validation works in 3.1', () => {
+      const d = validate('backend web\n    use_backend other\n')
+        .filter((d) => d.message.includes('not valid in'));
+      expect(d.length).toBeGreaterThan(0);
+    });
+
+    it('cross-reference warning in 3.1', () => {
+      const d = validate('frontend http\n    use_backend ghost\n')
+        .filter((d) => d.message.includes('ghost'));
+      expect(d).toHaveLength(1);
+    });
+  });
 });

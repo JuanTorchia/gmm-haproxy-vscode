@@ -12,6 +12,14 @@ import {
   Hover,
   DocumentFormattingParams,
   TextEdit,
+  DocumentSymbol,
+  DocumentSymbolParams,
+  Location,
+  DefinitionParams,
+  CodeAction,
+  CodeActionParams,
+  FoldingRange,
+  FoldingRangeParams,
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { HaproxyParser } from './parser/parser';
@@ -20,6 +28,10 @@ import { ValidationProvider } from './validation/validator';
 import { CompletionProvider } from './completion/completionProvider';
 import { HoverProvider } from './hover/hoverProvider';
 import { FormattingProvider } from './formatting/formatter';
+import { SymbolsProvider } from './symbols/symbolsProvider';
+import { DefinitionProvider } from './definition/definitionProvider';
+import { CodeActionsProvider } from './codeactions/codeActionsProvider';
+import { FoldingProvider } from './folding/foldingProvider';
 import { VersionRegistry } from './registry/versionRegistry';
 import { ServerSettings, DEFAULT_SETTINGS } from './settings';
 
@@ -49,6 +61,10 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       },
       hoverProvider: true,
       documentFormattingProvider: true,
+      documentSymbolProvider: true,
+      definitionProvider: true,
+      codeActionProvider: true,
+      foldingRangeProvider: true,
     },
   };
 });
@@ -105,6 +121,30 @@ connection.onHover((params: HoverParams): Hover | null => {
   if (!doc || !ast) return null;
   const provider = new HoverProvider(registry, settings.version);
   return provider.provideHover(ast, params.position);
+});
+
+connection.onFoldingRanges((params: FoldingRangeParams): FoldingRange[] => {
+  const ast = astCache.get(params.textDocument.uri);
+  if (!ast) return [];
+  return new FoldingProvider().provideFoldingRanges(ast);
+});
+
+connection.onCodeAction((params: CodeActionParams): CodeAction[] => {
+  const ast = astCache.get(params.textDocument.uri);
+  if (!ast) return [];
+  return new CodeActionsProvider().provideCodeActions(ast, params.range, params.context.diagnostics);
+});
+
+connection.onDefinition((params: DefinitionParams): Location | null => {
+  const ast = astCache.get(params.textDocument.uri);
+  if (!ast) return null;
+  return new DefinitionProvider().provideDefinition(ast, params.position);
+});
+
+connection.onDocumentSymbol((params: DocumentSymbolParams): DocumentSymbol[] => {
+  const ast = astCache.get(params.textDocument.uri);
+  if (!ast) return [];
+  return new SymbolsProvider().provideSymbols(ast);
 });
 
 connection.onDocumentFormatting((params: DocumentFormattingParams): TextEdit[] => {

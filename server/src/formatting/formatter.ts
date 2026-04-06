@@ -17,6 +17,7 @@ const SECTION_KEYWORDS = new Set([
 export class FormattingProvider {
   format(doc: TextDocument, options: FormattingOptions): TextEdit[] {
     const text = doc.getText();
+    if (!text) return [];
     const lines = text.split(/\r?\n/);
     const indent = options.insertSpaces ? ' '.repeat(options.tabSize) : '\t';
     const formattedLines: string[] = [];

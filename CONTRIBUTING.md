@@ -1,110 +1,134 @@
 # Contributing to HAProxy Config
 
-Thank you for contributing. This document covers how to set up the project, run tests, and submit changes.
+Thank you for considering a contribution. This document covers how to set up the project, run tests, and submit changes.
+
+---
 
 ## Development Setup
 
-**Requirements:**
-- Node.js 24.x LTS
-- VS Code 1.110.0+
-- Git
+**Requirements:** Node.js 24.x, npm 10+
 
 ```bash
 git clone https://github.com/gmm/gmm-haproxy-vscode
 cd gmm-haproxy-vscode
 npm install
-npm install --prefix client
-npm install --prefix server
+```
+
+**Run the extension in VSCode:**
+
+Press `F5` — this opens an Extension Development Host with the extension loaded. Open any `.cfg` file to activate it.
+
+**Compile (type-check only):**
+
+```bash
 npm run compile
 ```
 
-Press `F5` in VS Code to launch an **Extension Development Host** with the extension loaded. Open any `.cfg` file to activate it.
+**Build bundles (esbuild):**
 
-## Project Structure
-
-```
-client/src/extension.ts        — Thin VSCode client: starts the language server
-server/src/server.ts           — LSP server entry point
-server/src/parser/             — HAProxy config parser → typed AST
-server/src/registry/           — Directive definitions per HAProxy version
-server/src/validation/         — Diagnostic rules
-server/src/completion/         — Autocompletion provider
-server/src/hover/              — Hover documentation provider
-server/src/formatting/         — Document formatter
-server/src/data/               — Per-version directive JSON files (2.4–3.1)
-syntaxes/                      — TextMate grammar
-snippets/                      — Snippet definitions
-test/                          — Unit and integration tests
+```bash
+npm run build
 ```
 
-## Scripts
+**Watch mode (auto-rebuild on save):**
 
-| Command | Description |
-|---|---|
-| `npm run compile` | TypeScript type-check (no emit) |
-| `npm run build` | Bundle with esbuild (required before packaging) |
-| `npm run lint` | ESLint |
-| `npm run lint:fix` | ESLint with auto-fix |
-| `npm test` | Run all tests |
-| `npm run test:unit` | Unit tests only (parser, validator) |
-| `npm run watch` | Watch mode for development |
-| `npm run package` | Build `.vsix` package |
+```bash
+npm run watch
+```
 
-## Making Changes
+---
 
-### Adding a new HAProxy directive
+## Running Tests
 
-1. Add the definition to `server/src/registry/versionRegistry.ts` in `BASELINE_DIRECTIVES`.
-2. Set the correct `sinceVersion`, `sections`, `signature`, and `description`.
-3. If the directive was deprecated or removed, set `deprecatedSinceVersion` / `removedInVersion`.
-4. Add a test in `test/validator/validator.test.ts` covering valid and invalid usage.
+```bash
+npm run test:unit         # parser, validator, completion, hover, grammar, formatter
+npm run test:integration  # VSCode extension activation + LSP handshake
+npm test                  # both
+```
 
-### Adding a new validation rule
+**Coverage:**
 
-1. Create a rule function in `server/src/validation/rules/`.
-2. Import and apply it in `ValidationProvider.validateDirective()`.
-3. Add a test fixture and unit test.
+```bash
+npm run test:unit -- --coverage
+```
 
-### Updating the TextMate grammar
+Target: 80% lines and functions on parser, validator, completion, hover, formatter, registry.
 
-1. Edit `syntaxes/haproxy.tmLanguage.json`.
-2. Test against `test/fixtures/*.cfg` — all tokens should highlight as expected.
-3. Test with VS Code high-contrast themes.
+---
+
+## Project Layout
+
+```
+client/src/extension.ts        Thin LSP client — no business logic
+server/src/server.ts           Language server entry point
+server/src/parser/             Fault-tolerant config parser → AST
+server/src/validation/         Diagnostic rules
+server/src/completion/         Completion provider
+server/src/hover/              Hover provider
+server/src/formatting/         Document formatter
+server/src/registry/           Version-aware directive registry
+server/src/data/               HAProxy directive definitions (TypeScript data files)
+syntaxes/                      TextMate grammar
+snippets/                      Snippet definitions
+test/                          Unit and integration tests
+test/fixtures/                 Real HAProxy config files used in tests
+```
+
+---
+
+## Adding a New Directive
+
+1. Open `server/src/data/directives.ts` (proxy directives) or `server/src/data/global.ts` (global section).
+2. Add an entry following the existing pattern — include `name`, `signature`, `description`, `sections`, `since`, and optionally `deprecated`, `removed`, `httpOnly`, `tcpOnly`, `docsUrl`.
+3. Add a test in `test/validator/validator.test.ts` that validates the directive in its correct section and, if applicable, in a wrong section.
+
+---
 
 ## Commit Convention
 
-Format: `type(scope): description`
+Format: `type(scope): short description`
 
-| Type | When to use |
-|---|---|
+| Type | When |
+|------|------|
 | `feat` | New feature |
 | `fix` | Bug fix |
-| `perf` | Performance improvement |
-| `refactor` | Code change without behavior change |
 | `test` | Adding or fixing tests |
+| `refactor` | Code change that neither fixes a bug nor adds a feature |
+| `perf` | Performance improvement |
 | `docs` | Documentation only |
-| `chore` | Build, deps, config |
+| `chore` | Build, CI, dependencies |
 
-Examples:
-```
-feat(completion): add context-aware backend name suggestions
-fix(parser): handle continuation lines with CRLF endings
-test(validator): add coverage for 2.4 removed directives
-```
+Example: `fix(parser): handle continuation lines at end of file`
 
-## Pull Request Guidelines
+All commits must pass: `npm run lint && npm run compile && npm run test:unit`.
 
-- One logical change per PR.
-- All checks must pass: `npm run lint`, `npm run compile`, `npm test`.
-- Include a description of what changed and why.
-- Reference the issue number if applicable: `Closes #42`.
-- New directives require tests. New validation rules require tests.
+---
 
-## Reporting Issues
+## Pull Request Checklist
+
+- [ ] `npm run lint` passes
+- [ ] `npm run compile` passes
+- [ ] `npm test` passes
+- [ ] New directives have validator tests
+- [ ] New language features have unit tests
+- [ ] Coverage stays above 80% on modified modules
+
+---
+
+## Code Style
+
+- TypeScript strict mode — no `any`, no `as unknown as X` workarounds
+- Max file length: 300 lines. Max function length: 40 lines.
+- No `console.log` in production code — use `connection.console.log()` server-side
+- All exported symbols need JSDoc with `@param` and `@returns`
+
+---
+
+## Reporting Bugs
 
 Open an issue at [github.com/gmm/gmm-haproxy-vscode/issues](https://github.com/gmm/gmm-haproxy-vscode/issues) with:
-- VS Code version
+- VSCode version
 - Extension version
-- HAProxy version selected
-- The config snippet that triggers the issue (sanitized)
+- HAProxy version setting
+- The HAProxy config snippet that triggers the issue
 - Expected vs actual behavior

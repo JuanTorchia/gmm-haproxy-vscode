@@ -1,6 +1,7 @@
 import { SectionType } from '../parser/ast';
 import { DIRECTIVES } from '../data/directives';
 import { GLOBAL_DIRECTIVES } from '../data/global';
+import { SPECIAL_SECTION_DIRECTIVES } from '../data/special-sections';
 import { matrixToSections } from '../data/types';
 
 /** A directive definition as used by providers (completion, hover, validation). */
@@ -37,11 +38,11 @@ export class VersionRegistry {
     if (cached) return cached;
 
     const map = new Map<string, DirectiveDefinition>();
+
+    // Proxy and global directives
     const ALL_DIRECTIVES = [...DIRECTIVES, ...GLOBAL_DIRECTIVES];
     for (const d of ALL_DIRECTIVES) {
-      // Skip if introduced after this version
       if (this.compareVersions(resolved, d.since) < 0) continue;
-      // Skip if fully removed at or before this version
       if (d.removed && this.compareVersions(resolved, d.removed) >= 0) continue;
 
       const def: DirectiveDefinition = {
@@ -58,7 +59,48 @@ export class VersionRegistry {
         invertible: d.invertible,
         category: d.category,
       };
-      map.set(d.name.toLowerCase(), def);
+      // Don't overwrite an existing entry — proxy definitions take precedence
+      // (e.g. 'bind' or 'server' as proxy directives vs special-section variants)
+      if (!map.has(d.name.toLowerCase())) {
+        map.set(d.name.toLowerCase(), def);
+      } else {
+        // Merge sections: the same keyword may be valid in more sections
+        const existing = map.get(d.name.toLowerCase())!;
+        const merged: DirectiveDefinition = {
+          ...existing,
+          sections: Array.from(new Set([...existing.sections, ...matrixToSections(d.sections)])),
+        };
+        map.set(d.name.toLowerCase(), merged);
+      }
+    }
+
+    // Special-section directives (peers, resolvers, userlist, mailers, etc.)
+    for (const d of SPECIAL_SECTION_DIRECTIVES) {
+      if (this.compareVersions(resolved, d.since) < 0) continue;
+      if (d.removed && this.compareVersions(resolved, d.removed) >= 0) continue;
+
+      const key = d.name.toLowerCase();
+      if (map.has(key)) {
+        // Directive already known (e.g. 'bind', 'server', 'timeout connect') —
+        // extend its valid sections rather than overwriting.
+        const existing = map.get(key)!;
+        const merged: DirectiveDefinition = {
+          ...existing,
+          sections: Array.from(new Set([...existing.sections, ...d.sections])),
+        };
+        map.set(key, merged);
+      } else {
+        map.set(key, {
+          name: d.name,
+          sections: [...d.sections],
+          description: d.description,
+          signature: d.signature,
+          sinceVersion: d.since,
+          deprecatedSinceVersion: d.deprecated,
+          removedInVersion: d.removed,
+          docsUrl: d.docsUrl,
+        });
+      }
     }
 
     this.cache.set(resolved, map);

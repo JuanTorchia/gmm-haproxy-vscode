@@ -9,3 +9,5 @@ out/
 coverage/
 .env
 *.log
+.claude/
+*.tsbuildinfo

@@ -192,7 +192,7 @@ export class ValidationProvider {
       return;
     }
 
-    if (action.deprecated) {
+    if (action.deprecated && this.registry.compareVersions(this.version, action.deprecated) >= 0) {
       out.push(warning(
         toRange(actionArg.range),
         `'${actionName}' is deprecated since HAProxy ${action.deprecated}.`

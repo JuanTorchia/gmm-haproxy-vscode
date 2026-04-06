@@ -20,6 +20,11 @@ module.exports = {
     'server/src/registry/**/*.ts',
     'server/src/completion/**/*.ts',
     'server/src/hover/**/*.ts',
+    'server/src/formatting/**/*.ts',
+    'server/src/symbols/**/*.ts',
+    'server/src/definition/**/*.ts',
+    'server/src/codeactions/**/*.ts',
+    'server/src/folding/**/*.ts',
     '!**/*.d.ts',
   ],
   coverageThreshold: {
