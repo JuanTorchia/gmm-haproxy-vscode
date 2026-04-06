@@ -17,7 +17,7 @@
 ### Syntax Highlighting
 Every token in your HAProxy config gets meaningful color — section headers, directives, ACL names, backend references, IP addresses, ports, and timeouts.
 
-![Syntax highlighting](docs/images/01-syntax-highlighting.png)
+![Syntax highlighting](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/01-syntax-highlighting.png)
 
 ---
 
@@ -29,11 +29,11 @@ Context-aware suggestions that know which directives are valid in each section. 
 - Deprecated directives shown with strikethrough
 - Every suggestion includes signature and documentation
 
-![Autocompletion — directive suggestions](docs/images/02-completion-ba.png)
+![Autocompletion — directive suggestions](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/02-completion-ba.png)
 
-![Autocompletion — algorithm values](docs/images/02-completion-balance.png)
+![Autocompletion — algorithm values](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/02-completion-balance.png)
 
-![Autocompletion — http-request actions](docs/images/02-completion-http.png)
+![Autocompletion — http-request actions](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/02-completion-http.png)
 
 ---
 
@@ -44,47 +44,47 @@ Select your HAProxy version and get real-time diagnostics tailored to it. Direct
 - **Warnings** — deprecated directives with upgrade hints
 - **Cross-references** — `use_backend` pointing to an undefined backend
 
-![Validation — syntax error](docs/images/03-validation-error.png)
+![Validation — syntax error](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/03-validation-error.png)
 
-![Validation — deprecation warning](docs/images/03-validation-warning.png)
+![Validation — deprecation warning](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/03-validation-warning.png)
 
-![Validation — undefined backend reference](docs/images/03-validation-warning-backend.png)
+![Validation — undefined backend reference](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/03-validation-warning-backend.png)
 
 ---
 
 ### Hover Documentation
 Hover over any directive for instant reference: signature, description, valid sections, version availability, and a direct link to the HAProxy docs.
 
-![Hover — balance algorithms](docs/images/04-hover-balance.png)
+![Hover — balance algorithms](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/04-hover-balance.png)
 
-![Hover — http-request](docs/images/04-hover-http-request.png)
+![Hover — http-request](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/04-hover-http-request.png)
 
-![Hover — option httpchk](docs/images/04-hover-httpchk.png)
+![Hover — option httpchk](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/04-hover-httpchk.png)
 
-![Hover — stick-table](docs/images/04-hover-stick-table.png)
+![Hover — stick-table](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/04-hover-stick-table.png)
 
-![Hover — timeout](docs/images/04-hover-timeout.png)
+![Hover — timeout](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/04-hover-timeout.png)
 
 ---
 
 ### Go-to-Definition
 Press `F12` (or `Ctrl+Click`) on any backend name in a `use_backend` or `default_backend` directive to jump directly to its definition.
 
-![Go-to-definition](docs/images/05-definition.gif)
+![Go-to-definition](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/05-definition.gif)
 
 ---
 
 ### Section Folding
 Collapse and expand individual HAProxy sections to focus on what matters.
 
-![Section folding](docs/images/06-folding.png)
+![Section folding](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/06-folding.png)
 
 ---
 
 ### Quick Fix — Deprecated Directives
 Deprecated directives get a warning with a lightbulb quick fix. One click replaces the directive with the modern equivalent.
 
-![Quick fix for deprecated directive](docs/images/08-code-action.png)
+![Quick fix for deprecated directive](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/08-code-action.png)
 
 ---
 
@@ -148,7 +148,7 @@ The extension activates automatically when you open any `.cfg` or `.conf` file n
 
 All settings are available under `File → Preferences → Settings → HAProxy`.
 
-![Settings panel](docs/images/settings.png)
+![Settings panel](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/settings.png)
 
 | Setting | Default | Description |
 |---|---|---|
