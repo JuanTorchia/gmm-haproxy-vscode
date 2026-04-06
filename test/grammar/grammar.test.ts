@@ -20,7 +20,6 @@ const GRAMMAR_PATH = path.resolve(__dirname, '../../syntaxes/haproxy.tmLanguage.
 
 // Load and parse the grammar once for all tests
 const raw = fs.readFileSync(GRAMMAR_PATH, 'utf-8');
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const grammar: any = JSON.parse(raw);
 
 // ── Structural integrity ────────────────────────────────────────────────────
@@ -57,7 +56,6 @@ describe('HAProxy grammar — structural integrity', () => {
 
 describe('HAProxy grammar — scope names match CLAUDE.md spec', () => {
   /** Collect all "name" values from a grammar node recursively. */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function collectScopes(node: any): string[] {
     const scopes: string[] = [];
     if (!node || typeof node !== 'object') return scopes;
@@ -161,7 +159,6 @@ describe('HAProxy grammar — required repository rules present', () => {
 // ── Regex compilation ──────────────────────────────────────────────────────
 
 describe('HAProxy grammar — all regex patterns compile', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function collectPatterns(node: any): string[] {
     const patterns: string[] = [];
     if (!node || typeof node !== 'object') return patterns;

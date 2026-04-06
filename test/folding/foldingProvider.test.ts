@@ -52,7 +52,7 @@ describe('FoldingProvider', () => {
   it('first section fold ends before the next section starts', () => {
     const text = 'frontend http\n    bind *:80\n\nbackend web\n    balance roundrobin\n';
     const folds = getFolds(text);
-    expect(folds[0]?.endLine).toBeLessThan(folds[1]!.startLine);
+    expect(folds[0]?.endLine).toBeLessThan(folds[1]?.startLine ?? Infinity);
   });
 
   it('fold kind is Region', () => {

@@ -9,7 +9,7 @@ function format(text: string): string | null {
   const doc = TextDocument.create('test://format', 'haproxy', 1, text);
   const edits = provider.format(doc as never, opts);
   if (edits.length === 0) return null; // no changes
-  return edits[0]!.newText;
+  return edits[0]?.newText ?? null;
 }
 
 describe('FormattingProvider', () => {

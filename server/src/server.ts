@@ -187,7 +187,7 @@ function validateDocument(doc: TextDocument): void {
 async function refreshSettings(): Promise<void> {
   if (!hasConfigurationCapability) return;
   try {
-    const config = await connection.workspace.getConfiguration('haproxy');
+    const config: unknown = await connection.workspace.getConfiguration('haproxy');
     settings = {
       version: (config as Record<string, unknown>).version as string ?? DEFAULT_SETTINGS.version,
       validationEnabled: (config as Record<string, unknown>)['validate.enable'] as boolean ?? DEFAULT_SETTINGS.validationEnabled,

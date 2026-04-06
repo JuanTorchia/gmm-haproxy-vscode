@@ -38,7 +38,7 @@ export class CodeActionsProvider {
       const match = /^'([^']+)' is deprecated/.exec(diag.message);
       if (!match) continue;
 
-      const directiveName = match[1]!.toLowerCase();
+      const directiveName = match[1].toLowerCase();
       const replacement = SAFE_REPLACEMENTS[directiveName];
       if (!replacement) continue;
 
@@ -88,7 +88,7 @@ export class CodeActionsProvider {
         if (combined === directiveName || kw === directiveName) {
           // Range: from start of keyword to end of first arg (if compound), or end of keyword
           const endRange = (combined === directiveName && firstArg)
-            ? directive.args[0]!.range
+            ? directive.args[0].range
             : directive.keyword.range;
 
           return {

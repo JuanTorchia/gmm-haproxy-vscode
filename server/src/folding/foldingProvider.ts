@@ -11,7 +11,7 @@ export class FoldingProvider {
     const ranges: FoldingRange[] = [];
 
     for (let i = 0; i < doc.sections.length; i++) {
-      const section = doc.sections[i]!;
+      const section = doc.sections[i];
       const nextSection = doc.sections[i + 1];
 
       const startLine = section.headerRange.startLine;
@@ -42,7 +42,7 @@ export class FoldingProvider {
 
     // Last section: fold ends at last directive
     if (section.directives.length > 0) {
-      return section.directives[section.directives.length - 1]!.range.endLine;
+      return section.directives[section.directives.length - 1].range.endLine;
     }
 
     return section.headerRange.startLine;

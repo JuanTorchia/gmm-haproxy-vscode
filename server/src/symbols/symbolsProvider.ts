@@ -32,7 +32,7 @@ export class SymbolsProvider {
     const symbols: DocumentSymbol[] = [];
 
     for (let i = 0; i < doc.sections.length; i++) {
-      const section = doc.sections[i]!;
+      const section = doc.sections[i];
       const nextSection = doc.sections[i + 1];
 
       const fullRange = this.sectionRange(section, nextSection);
@@ -75,7 +75,7 @@ export class SymbolsProvider {
 
     // Last section: end at last directive or at the header itself
     if (section.directives.length > 0) {
-      const last = section.directives[section.directives.length - 1]!;
+      const last = section.directives[section.directives.length - 1];
       return {
         start: { line: startLine, character: 0 },
         end:   { line: last.range.endLine, character: last.range.endCharacter },

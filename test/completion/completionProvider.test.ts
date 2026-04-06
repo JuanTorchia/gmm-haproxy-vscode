@@ -64,9 +64,10 @@ describe('CompletionProvider — directive completions', () => {
     // reqrep was deprecated/removed — find any deprecated item
     const text = 'frontend http\n    ';
     const items = complete(text, '    ');
-    const deprecated = items.filter((i) => i.tags?.includes(CompletionItemTag.Deprecated));
     // There should be at least some deprecated directives available in older versions
     const itemsOld = complete('frontend http\n    ', '    ', '2.4');
+    // Verify the deprecated filter code path works
+    void items.filter((i) => i.tags?.includes(CompletionItemTag.Deprecated));
     // Just verify the code path works without throwing
     expect(Array.isArray(itemsOld)).toBe(true);
   });

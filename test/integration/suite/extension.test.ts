@@ -33,7 +33,7 @@ suite('Language features on basic.cfg', () => {
     assert.strictEqual(doc.languageId, 'haproxy');
   });
 
-  test('no diagnostics on valid basic config', async () => {
+  test('no diagnostics on valid basic config', () => {
     const diags = vscode.languages.getDiagnostics(doc.uri);
     const errors = diags.filter((d) => d.severity === vscode.DiagnosticSeverity.Error);
     assert.strictEqual(errors.length, 0, `Unexpected errors: ${errors.map((e) => e.message).join(', ')}`);

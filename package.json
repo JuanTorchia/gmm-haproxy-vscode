@@ -50,9 +50,18 @@
     "languages": [
       {
         "id": "haproxy",
-        "aliases": ["HAProxy", "haproxy"],
-        "extensions": [".cfg", ".conf"],
-        "filenames": ["haproxy.cfg", "haproxy.conf"],
+        "aliases": [
+          "HAProxy",
+          "haproxy"
+        ],
+        "extensions": [
+          ".cfg",
+          ".conf"
+        ],
+        "filenames": [
+          "haproxy.cfg",
+          "haproxy.conf"
+        ],
         "configuration": "./language-configuration.json"
       }
     ],
@@ -75,7 +84,13 @@
         "haproxy.version": {
           "type": "string",
           "default": "3.1",
-          "enum": ["2.4", "2.6", "2.8", "3.0", "3.1"],
+          "enum": [
+            "2.4",
+            "2.6",
+            "2.8",
+            "3.0",
+            "3.1"
+          ],
           "enumDescriptions": [
             "HAProxy 2.4 LTS",
             "HAProxy 2.6 LTS",
@@ -101,7 +116,11 @@
         "haproxy.trace.server": {
           "type": "string",
           "default": "off",
-          "enum": ["off", "messages", "verbose"],
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
           "description": "Language server trace level for debugging.",
           "markdownDescription": "Controls LSP message tracing. Set to `messages` or `verbose` to debug language server communication."
         }
@@ -127,8 +146,8 @@
     "watch": "npm run watch:client & npm run watch:server",
     "watch:client": "esbuild client/src/extension.ts --bundle --outfile=client/out/extension.js --external:vscode --format=cjs --platform=node --sourcemap --watch",
     "watch:server": "esbuild server/src/server.ts --bundle --outfile=server/out/server.js --format=cjs --platform=node --sourcemap --watch",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "jest --testPathPattern=\"test/(parser|validator|completion|hover|grammar|formatter|symbols|definition|codeactions|folding)\"",
     "test:integration": "node ./test/integration/runTests.js",
@@ -136,6 +155,8 @@
     "publish": "vsce publish"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@types/jest": "29.5.14",
     "@types/mocha": "10.0.10",
     "@types/node": "^22.17.2",
     "@typescript-eslint/eslint-plugin": "8.58.0",
@@ -144,12 +165,14 @@
     "@vscode/vsce": "3.7.1",
     "esbuild": "0.28.0",
     "eslint": "10.2.0",
-    "eslint-plugin-security": "^3.0.0",
+    "eslint-plugin-security": "^4.0.0",
     "glob": "11.0.3",
     "jest": "29.7.0",
     "mocha": "10.8.2",
     "ts-jest": "29.2.6",
-    "@types/jest": "29.5.14",
     "typescript": "6.0"
+  },
+  "dependencies": {
+    "globals": "^15.15.0"
   }
 }
