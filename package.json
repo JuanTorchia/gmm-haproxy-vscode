@@ -2,7 +2,7 @@
   "name": "gmm-haproxy-vscode",
   "displayName": "HAProxy Config",
   "description": "Full language support for HAProxy configuration files — syntax highlighting, autocompletion, validation, hover docs, snippets, and formatting. Multi-version support from 2.4 LTS to 3.1.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "gmm",
   "author": {
     "name": "Juan Torchia",

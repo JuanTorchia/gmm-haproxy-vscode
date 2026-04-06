@@ -6,6 +6,13 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.2] — 2026-04-06
+
+### Fixed
+- README images not showing on Marketplace (private repo — switched to absolute
+  raw.githubusercontent.com URLs from public assets repo)
+- Fixed repository.url in package.json pointing to old `gmm/` organization
+
 ## [0.1.1] — 2026-04-06
 
 ### Fixed
