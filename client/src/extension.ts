@@ -57,7 +57,7 @@ function createLanguageClient(context: ExtensionContext): LanguageClient {
       fileEvents: workspace.createFileSystemWatcher('**/*.{cfg,conf}'),
     },
     outputChannelName: 'HAProxy',
-    traceOutputChannel: window.createOutputChannel('HAProxy (Trace)'),
+    traceOutputChannel: window.createOutputChannel('HAProxy (Trace)', { log: true }),
   };
 
   return new LanguageClient('haproxy', 'HAProxy Language Server', serverOptions, clientOptions);

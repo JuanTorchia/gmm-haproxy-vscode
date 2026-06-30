@@ -1,15 +1,15 @@
 import { HaproxyParser } from '../../server/src/parser/parser';
 import { ValidationProvider } from '../../server/src/validation/validator';
 import { VersionRegistry } from '../../server/src/registry/versionRegistry';
-import { DiagnosticSeverity } from '../__mocks__/vscode-languageserver';
+import { Diagnostic, DiagnosticSeverity } from '../__mocks__/vscode-languageserver';
 
 const parser = new HaproxyParser();
 const registry = new VersionRegistry();
 
-function validate(text: string, version = '3.1') {
+function validate(text: string, version = '3.1'): Diagnostic[] {
   const doc = parser.parse(text, 'test://validate');
   const validator = new ValidationProvider(registry, version);
-  return validator.validate(doc);
+  return validator.validate(doc) as Diagnostic[];
 }
 
 describe('ValidationProvider', () => {
