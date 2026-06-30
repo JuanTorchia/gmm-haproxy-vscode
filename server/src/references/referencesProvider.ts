@@ -21,7 +21,7 @@ export class ReferencesProvider {
   }
 }
 
-function toRange(r: SourceRange) {
+function toRange(r: SourceRange): { start: { line: number; character: number }; end: { line: number; character: number } } {
   return {
     start: { line: r.startLine, character: r.startCharacter },
     end:   { line: r.endLine,   character: r.endCharacter   },

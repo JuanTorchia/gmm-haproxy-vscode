@@ -21,10 +21,6 @@ function info(range: Range, message: string): Diagnostic {
   return { severity: DiagnosticSeverity.Information, range, message, source: 'haproxy' };
 }
 
-function hint(range: Range, message: string): Diagnostic {
-  return { severity: DiagnosticSeverity.Hint, range, message, source: 'haproxy' };
-}
-
 function pathExists(p: string): boolean {
   try {
     return fs.existsSync(p);
@@ -90,7 +86,7 @@ function checkUnusedAcls(doc: HaproxyDocument, out: Diagnostic[]): void {
       if (ifIdx !== -1) {
         for (const a of dir.args.slice(ifIdx + 1)) {
           const name = a.value.startsWith('!') ? a.value.slice(1) : a.value;
-          if (/^[\w][\w\-\.]*$/.test(name)) used.add(name.toLowerCase());
+          if (/^[\w][\w\-.]*$/.test(name)) used.add(name.toLowerCase());
         }
       }
     }

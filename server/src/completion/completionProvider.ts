@@ -10,7 +10,7 @@ import { VersionRegistry } from '../registry/versionRegistry';
 import { ACTIONS, ActionRulesets } from '../data/actions';
 import { FETCH_METHODS, PREDEFINED_ACLS } from '../data/acl';
 import { SERVER_PARAMS } from '../data/server-params';
-import { CompletionContext, parseLineContext } from './completionContext';
+import { parseLineContext } from './completionContext';
 import {
   buildDirectiveDoc, buildActionDoc, buildFetchMethodDoc, buildServerParamDoc,
   allowedFetchLayers, tcpRequestKeywordCompletions, tcpResponseKeywordCompletions,

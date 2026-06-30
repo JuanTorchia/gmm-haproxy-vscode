@@ -5,7 +5,6 @@
 import {
   CompletionItem,
   CompletionItemKind,
-  CompletionItemTag,
   MarkupKind,
 } from 'vscode-languageserver/node';
 import { DirectiveDefinition } from '../registry/versionRegistry';

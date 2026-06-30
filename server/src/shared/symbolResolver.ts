@@ -287,7 +287,7 @@ function rangeNoNeg(arg: DirectiveArg): SourceRange {
 }
 
 function isAclName(value: string): boolean {
-  return value !== '||' && /^[\w][\w\-\.]*$/.test(value);
+  return value !== '||' && /^[\w][\w\-.]*$/.test(value);
 }
 
 function isDynamic(value: string): boolean {
