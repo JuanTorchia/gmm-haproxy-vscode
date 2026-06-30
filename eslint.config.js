@@ -11,6 +11,7 @@ module.exports = [
     ignores: [
       '**/out/**',
       '**/node_modules/**',
+      '**/.vscode-test/**',
       '**/*.d.ts',
       'eslint.config.js',
       'jest.config.js',

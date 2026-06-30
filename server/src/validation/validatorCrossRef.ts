@@ -1,6 +1,5 @@
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver/node';
-import { HaproxyDocument, HaproxySection, SourceRange } from '../parser/ast';
-import * as fs from 'fs';
+import { HaproxyDocument, SourceRange } from '../parser/ast';
 
 const MAX_DIAGNOSTICS = 100;
 
@@ -19,14 +18,6 @@ function warning(range: Range, message: string): Diagnostic {
 
 function info(range: Range, message: string): Diagnostic {
   return { severity: DiagnosticSeverity.Information, range, message, source: 'haproxy' };
-}
-
-function pathExists(p: string): boolean {
-  try {
-    return fs.existsSync(p);
-  } catch {
-    return true; // can't check (e.g. remote FS edge case) — assume OK
-  }
 }
 
 // ─── Sub-functions for validateUnreferencedSymbols ───────────────────────────
@@ -162,44 +153,6 @@ export function validateCrossReferences(doc: HaproxyDocument, out: Diagnostic[])
           out.push(warning(toRange(a.range),
             `Cache section '${a.value}' is not defined in this file.`));
         }
-      }
-    }
-  }
-}
-
-export function validateModulePaths(section: HaproxySection, out: Diagnostic[]): void {
-  // First pass: collect module-path (must be resolved before validating module-load)
-  let modulePath: string | undefined;
-  for (const dir of section.directives) {
-    if (dir.keyword.value.toLowerCase() === 'module-path' && dir.args[0]) {
-      modulePath = dir.args[0].value;
-      break;
-    }
-  }
-
-  for (const dir of section.directives) {
-    if (out.length >= MAX_DIAGNOSTICS) return;
-    const kw = dir.keyword.value.toLowerCase();
-    const a = dir.args[0];
-    if (!a) continue;
-
-    if (kw === 'module-path') {
-      if (!pathExists(a.value)) {
-        out.push(warning(toRange(a.range),
-          `Module directory '${a.value}' does not exist.`));
-      }
-    } else if (kw === 'module-load') {
-      if (modulePath) {
-        const full = `${modulePath}/${a.value}`;
-        if (!pathExists(full)) {
-          out.push(warning(toRange(a.range),
-            `Module '${a.value}' not found in '${modulePath}'.`));
-        }
-      }
-    } else if (kw === 'waf-load') {
-      if (!pathExists(a.value)) {
-        out.push(warning(toRange(a.range),
-          `WAF rules file '${a.value}' does not exist.`));
       }
     }
   }

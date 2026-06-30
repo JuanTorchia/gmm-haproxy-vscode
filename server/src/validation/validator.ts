@@ -2,7 +2,7 @@ import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver/nod
 import { HaproxyDocument, HaproxySection, HaproxyDirective, SourceRange } from '../parser/ast';
 import { VersionRegistry } from '../registry/versionRegistry';
 import { ACTIONS, ActionRulesets } from '../data/actions';
-import { validateCrossReferences, validateUnreferencedSymbols, validateModulePaths } from './validatorCrossRef';
+import { validateCrossReferences, validateUnreferencedSymbols } from './validatorCrossRef';
 
 const MAX_DIAGNOSTICS = 100;
 
@@ -55,10 +55,6 @@ export class ValidationProvider {
   }
 
   private validateSection(section: HaproxySection, out: Diagnostic[]): void {
-    if (section.type === 'global') {
-      validateModulePaths(section, out);
-    }
-
     // use-server cross-reference: server must be defined in the same section
     if (section.type === 'backend' || section.type === 'listen') {
       const definedServers = new Set<string>();
@@ -226,4 +222,3 @@ function error(range: Range, message: string): Diagnostic {
 function warning(range: Range, message: string): Diagnostic {
   return { severity: DiagnosticSeverity.Warning, range, message, source: 'haproxy' };
 }
-

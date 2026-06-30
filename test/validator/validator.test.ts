@@ -471,26 +471,26 @@ describe('ValidationProvider', () => {
 
     it('errors on reqrep (removed in 2.4)', () => {
       const d = validate('frontend http\n    reqrep ^Host:\\ (.*) Host:\\ \\1\n', v)
-        .filter((d) => d.message.includes('reqrep'));
+        .filter((diag) => diag.message.includes('reqrep'));
       expect(d.length).toBeGreaterThan(0);
       expect(d[0]?.severity).toBe(DiagnosticSeverity.Error);
     });
 
     it('errors on rsprep (removed in 2.4)', () => {
       const d = validate('backend web\n    rsprep ^Server:\\ .* Server:\\ HAProxy\n', v)
-        .filter((d) => d.message.includes('rsprep'));
+        .filter((diag) => diag.message.includes('rsprep'));
       expect(d.length).toBeGreaterThan(0);
     });
 
     it('set-mark action has no deprecation warning in 2.4 (deprecated since 2.6)', () => {
       const d = validate('frontend http\n    http-request set-mark 0x1\n', v)
-        .filter((d) => d.severity === DiagnosticSeverity.Warning && d.message.includes('set-mark'));
+        .filter((diag) => diag.severity === DiagnosticSeverity.Warning && diag.message.includes('set-mark'));
       expect(d).toHaveLength(0);
     });
 
     it('option httpclose emits deprecation warning (deprecated since 1.5)', () => {
       const d = validate('backend web\n    option httpclose\n', v)
-        .filter((d) => d.severity === DiagnosticSeverity.Warning);
+        .filter((diag) => diag.severity === DiagnosticSeverity.Warning);
       expect(d.length).toBeGreaterThan(0);
     });
   });
@@ -504,19 +504,19 @@ describe('ValidationProvider', () => {
 
     it('errors on reqrep (still removed in 2.6)', () => {
       const d = validate('frontend http\n    reqrep ^Host:\\ (.*) Host:\\ \\1\n', v)
-        .filter((d) => d.message.includes('reqrep'));
+        .filter((diag) => diag.message.includes('reqrep'));
       expect(d.length).toBeGreaterThan(0);
     });
 
     it('set-mark action emits deprecation warning (deprecated since 2.6)', () => {
       const d = validate('frontend http\n    http-request set-mark 0x1\n', v)
-        .filter((d) => d.severity === DiagnosticSeverity.Warning && d.message.includes('set-mark'));
+        .filter((diag) => diag.severity === DiagnosticSeverity.Warning && diag.message.includes('set-mark'));
       expect(d.length).toBeGreaterThan(0);
     });
 
     it('set-tos action emits deprecation warning (deprecated since 2.6)', () => {
       const d = validate('frontend http\n    http-request set-tos 0x10\n', v)
-        .filter((d) => d.severity === DiagnosticSeverity.Warning && d.message.includes('set-tos'));
+        .filter((diag) => diag.severity === DiagnosticSeverity.Warning && diag.message.includes('set-tos'));
       expect(d.length).toBeGreaterThan(0);
     });
 
@@ -535,19 +535,19 @@ describe('ValidationProvider', () => {
 
     it('errors on reqrep (still removed in 2.8)', () => {
       const d = validate('frontend http\n    reqrep ^Host:\\ (.*) Host:\\ \\1\n', v)
-        .filter((d) => d.message.includes('reqrep'));
+        .filter((diag) => diag.message.includes('reqrep'));
       expect(d.length).toBeGreaterThan(0);
     });
 
     it('set-mark action still emits deprecation warning in 2.8', () => {
       const d = validate('frontend http\n    http-request set-mark 0x1\n', v)
-        .filter((d) => d.severity === DiagnosticSeverity.Warning);
+        .filter((diag) => diag.severity === DiagnosticSeverity.Warning);
       expect(d.length).toBeGreaterThan(0);
     });
 
     it('cross-reference validation works in 2.8', () => {
       const text = 'frontend http\n    use_backend missing\n';
-      const d = validate(text, v).filter((d) => d.message.includes('missing'));
+      const d = validate(text, v).filter((diag) => diag.message.includes('missing'));
       expect(d).toHaveLength(1);
       expect(d[0]?.severity).toBe(DiagnosticSeverity.Warning);
     });
@@ -562,7 +562,7 @@ describe('ValidationProvider', () => {
 
     it('errors on unknown directive', () => {
       const d = validate('backend web\n    notreal foo\n', v)
-        .filter((d) => d.message.toLowerCase().includes('unknown'));
+        .filter((diag) => diag.message.toLowerCase().includes('unknown'));
       expect(d.length).toBeGreaterThan(0);
     });
 
@@ -579,25 +579,25 @@ describe('ValidationProvider', () => {
 
     it('errors on reqrep (removed since 2.4)', () => {
       const d = validate('frontend http\n    reqrep ^Host:\\ (.*) Host:\\ \\1\n')
-        .filter((d) => d.message.includes('reqrep'));
+        .filter((diag) => diag.message.includes('reqrep'));
       expect(d.length).toBeGreaterThan(0);
     });
 
     it('set-mark action emits deprecation warning in 3.1', () => {
       const d = validate('frontend http\n    http-request set-mark 0x1\n')
-        .filter((d) => d.severity === DiagnosticSeverity.Warning);
+        .filter((diag) => diag.severity === DiagnosticSeverity.Warning);
       expect(d.length).toBeGreaterThan(0);
     });
 
     it('section validation works in 3.1', () => {
       const d = validate('backend web\n    use_backend other\n')
-        .filter((d) => d.message.includes('not valid in'));
+        .filter((diag) => diag.message.includes('not valid in'));
       expect(d.length).toBeGreaterThan(0);
     });
 
     it('cross-reference warning in 3.1', () => {
       const d = validate('frontend http\n    use_backend ghost\n')
-        .filter((d) => d.message.includes('ghost'));
+        .filter((diag) => diag.message.includes('ghost'));
       expect(d).toHaveLength(1);
     });
   });
