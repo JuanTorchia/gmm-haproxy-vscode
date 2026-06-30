@@ -32,6 +32,7 @@ export class CodeActionsProvider {
     const actions: CodeAction[] = [];
 
     for (const diag of diagnostics) {
+      if (typeof diag.message !== 'string') continue;
       if (!diag.message.includes(DEPRECATED_MARKER)) continue;
 
       // Extract the directive name from the message: "'<name>' is deprecated..."

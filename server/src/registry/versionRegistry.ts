@@ -135,7 +135,7 @@ export class VersionRegistry {
       const known = KNOWN_VERSIONS[i] as string;
       if (this.compareVersions(version, known) >= 0) return known;
     }
-    return KNOWN_VERSIONS[0] as string;
+    return KNOWN_VERSIONS[0];
   }
 
   /**
