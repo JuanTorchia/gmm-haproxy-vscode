@@ -114,9 +114,9 @@ describe('CodeActionsProvider', () => {
           : `${indent}${kw}`;
         const text = `backend web\n${line}\n`;
         const doc = parser.parse(text, 'test://smoke');
-        const diags = validator.validate(doc);
+        const diags = validator.validate(doc) as Diagnostic[];
         const deprecationWarning = diags.find(
-          (d: { message: string }) => d.message.includes('is deprecated since HAProxy')
+          (d) => d.message.includes('is deprecated since HAProxy')
                  && d.message.toLowerCase().includes(directiveName.toLowerCase())
         );
         expect(deprecationWarning).toBeDefined();
