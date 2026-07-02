@@ -25,6 +25,7 @@ This roadmap is intentionally short. The extension is most useful when it stays 
 - Add real sanitized config fixtures.
 - Improve snippets for common production patterns.
 - Improve documentation for troubleshooting and local development.
+- Improve README and Marketplace demos so more HAProxy users can discover the extension.
 
 See [GOOD_FIRST_ISSUES.md](GOOD_FIRST_ISSUES.md) for starter tasks.
 

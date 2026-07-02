@@ -2,6 +2,8 @@
 
 These tasks are useful, low-risk, and do not require deep knowledge of the language server internals.
 
+Open issues tagged [`good first issue`](https://github.com/JuanTorchia/gmm-haproxy-vscode/issues?q=is%3Aissue%20is%3Aopen%20label%3A%22good%20first%20issue%22) are the best place to start. If you use HAProxy in production, sanitized examples and directive corrections are especially valuable.
+
 ## Add a Missing Directive
 
 Good for: first-time TypeScript contributors.

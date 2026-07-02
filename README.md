@@ -6,9 +6,19 @@
 [![CI](https://github.com/JuanTorchia/gmm-haproxy-vscode/actions/workflows/ci.yml/badge.svg)](https://github.com/JuanTorchia/gmm-haproxy-vscode/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**The missing IDE experience for HAProxy.** Stop memorizing directive names, guessing valid options, and discovering config errors only when HAProxy refuses to start.
+**Version-aware HAProxy language support for VS Code.** Stop memorizing directive names, guessing valid options, and discovering config errors only when HAProxy refuses to start.
 
 > Full language support for `.cfg` and `.conf` HAProxy files — with version-aware validation, intelligent autocompletion, and inline documentation right inside VS Code.
+
+---
+
+## Why DevOps and SRE teams use it
+
+- **Catch mistakes before reloads** — unknown directives, wrong sections, undefined backends, deprecated options, and version mismatches show up while editing.
+- **Edit against the HAProxy version you run** — validate configs for HAProxy 2.4, 2.6, 2.8, 3.0, or 3.1 per workspace.
+- **Keep context in VS Code** — completions, hover docs, snippets, formatting, folding, symbol navigation, and quick fixes reduce trips to the manual.
+
+If this extension helps you avoid HAProxy config mistakes, consider starring the repo so other operators can find it.
 
 ---
 
@@ -201,6 +211,8 @@ This extension brings the config editing experience up to the same level as edit
 
 Issues and pull requests are welcome at [github.com/JuanTorchia/gmm-haproxy-vscode](https://github.com/JuanTorchia/gmm-haproxy-vscode).
 
+The most useful contributions are small and specific: missing directive metadata, sanitized real-world fixtures, version-specific validation tests, snippet improvements, and documentation that helps operators trust the extension.
+
 Useful starting points:
 
 - [Roadmap](ROADMAP.md) — what is planned for v1.0 and later
@@ -226,6 +238,8 @@ Then press `F5` in VS Code to open an Extension Development Host with the extens
 - `npm run compile` must pass
 - `npm run test:unit` must pass for most changes
 - `npm test` must pass before larger runtime or integration changes
+
+If you use the Marketplace extension and notice missing HAProxy behavior, open an issue with a sanitized config snippet. Those reports directly improve completion, hover docs, and validation accuracy.
 
 ---
 
