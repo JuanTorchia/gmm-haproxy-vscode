@@ -8,6 +8,23 @@ out/
 .vscode-test/
 coverage/
 .env
+.env.*
+!.env.example
 *.log
 .claude/
 *.tsbuildinfo
+
+# Local credentials and secrets
+serviceaccount.json
+service-account.json
+serviceaccout.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.kubeconfig
+credentials.json
+firebase-adminsdk*.json
+google-application-credentials*.json

@@ -21,9 +21,9 @@ git clone <repo-url>
 cd gmm-haproxy-vscode
 
 # Install all workspace dependencies (root + client + server)
-npm install
-npm install --prefix client --legacy-peer-deps
-npm install --prefix server --legacy-peer-deps
+npm ci
+npm ci --legacy-peer-deps --prefix client
+npm ci --legacy-peer-deps --prefix server
 ```
 
 > **Note:** `--legacy-peer-deps` is required because TypeScript 6.x has not yet been formally tested with ts-jest 29.x. The combination works in practice.

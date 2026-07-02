@@ -24,10 +24,10 @@ jobs:
         run: npm ci
 
       - name: Install client dependencies
-        run: npm install --legacy-peer-deps --prefix client
+        run: npm ci --legacy-peer-deps --prefix client
 
       - name: Install server dependencies
-        run: npm install --legacy-peer-deps --prefix server
+        run: npm ci --legacy-peer-deps --prefix server
 
       - name: Lint
         run: npm run lint

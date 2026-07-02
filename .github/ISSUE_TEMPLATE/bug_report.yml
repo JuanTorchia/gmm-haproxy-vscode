@@ -1,0 +1,87 @@
+name: Bug report
+description: Report incorrect behavior in the extension.
+title: "fix: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please use a minimal sanitized config snippet. Do not include secrets, private keys, certificates, or full production configs.
+  - type: input
+    id: extension-version
+    attributes:
+      label: Extension version
+      placeholder: "0.1.2"
+    validations:
+      required: true
+  - type: input
+    id: vscode-version
+    attributes:
+      label: VS Code version
+      placeholder: "1.110.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - macOS
+        - Windows
+    validations:
+      required: true
+  - type: dropdown
+    id: haproxy-version
+    attributes:
+      label: HAProxy version setting
+      options:
+        - "2.4"
+        - "2.6"
+        - "2.8"
+        - "3.0"
+        - "3.1"
+    validations:
+      required: true
+  - type: dropdown
+    id: feature
+    attributes:
+      label: Feature area
+      options:
+        - Syntax highlighting
+        - Completion
+        - Validation
+        - Hover
+        - Formatting
+        - Snippets
+        - Go-to-definition
+        - Folding
+        - Extension activation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: Minimal sanitized HAProxy config
+      render: haproxy
+      description: Include only the smallest config needed to reproduce the issue.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context
+      description: Screenshots or logs are useful when they do not contain sensitive data.

@@ -1,0 +1,50 @@
+name: Feature request
+description: Suggest a focused improvement for HAProxy config editing.
+title: "feat: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Good feature requests explain which HAProxy editing mistake this would prevent or which workflow it would speed up.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What production mistake, editing friction, or documentation gap does this address?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior you want in VS Code.
+    validations:
+      required: true
+  - type: dropdown
+    id: feature-area
+    attributes:
+      label: Feature area
+      options:
+        - Completion
+        - Validation
+        - Hover
+        - Formatting
+        - Snippets
+        - Navigation
+        - Documentation
+        - Marketplace
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example HAProxy config or workflow
+      render: haproxy
+      description: Use sanitized examples only.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional, but useful when there are trade-offs.

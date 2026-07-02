@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/JuanTorchia/gmm-haproxy-vscode/blob/main/SECURITY.md
+    about: Please follow the private reporting guidance.
+  - name: Support guidance
+    url: https://github.com/JuanTorchia/gmm-haproxy-vscode/blob/main/SUPPORT.md
+    about: Check where to report bugs, feature requests, and questions.

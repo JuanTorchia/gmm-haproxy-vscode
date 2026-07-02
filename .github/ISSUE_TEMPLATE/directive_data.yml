@@ -1,0 +1,66 @@
+name: Directive data update
+description: Request or contribute missing HAProxy directive metadata.
+title: "data: add "
+labels: ["directive-data", "good first issue", "needs-triage"]
+body:
+  - type: input
+    id: directive
+    attributes:
+      label: Directive or option name
+      placeholder: "http-request, balance, timeout connect"
+    validations:
+      required: true
+  - type: dropdown
+    id: section
+    attributes:
+      label: Valid section
+      multiple: true
+      options:
+        - global
+        - defaults
+        - frontend
+        - backend
+        - listen
+        - userlist
+        - peers
+        - resolvers
+        - mailers
+        - ring
+        - log-forward
+        - program
+        - http-errors
+        - cache
+    validations:
+      required: true
+  - type: dropdown
+    id: since
+    attributes:
+      label: Available since
+      options:
+        - "2.4"
+        - "2.6"
+        - "2.8"
+        - "3.0"
+        - "3.1"
+        - Unknown
+    validations:
+      required: true
+  - type: input
+    id: docs
+    attributes:
+      label: Official HAProxy docs URL
+      placeholder: "https://docs.haproxy.org/..."
+    validations:
+      required: true
+  - type: textarea
+    id: signature
+    attributes:
+      label: Signature and short description
+      description: Paste or summarize the directive signature from official docs.
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation notes
+      description: Mention deprecations, removals, HTTP/TCP mode restrictions, required args, or enum values.

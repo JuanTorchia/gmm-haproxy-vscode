@@ -1,6 +1,12 @@
 # Contributing to HAProxy Config
 
-Thank you for considering a contribution. This document covers how to set up the project, run tests, and submit changes.
+Thank you for considering a contribution. This project is useful when it stays accurate, fast, and focused on preventing HAProxy configuration mistakes.
+
+Good first places to start:
+
+- [Good first issues](GOOD_FIRST_ISSUES.md)
+- [Roadmap](ROADMAP.md)
+- [Support guide](SUPPORT.md)
 
 ---
 
@@ -9,9 +15,11 @@ Thank you for considering a contribution. This document covers how to set up the
 **Requirements:** Node.js 24.x, npm 10+
 
 ```bash
-git clone https://github.com/gmm/gmm-haproxy-vscode
+git clone https://github.com/JuanTorchia/gmm-haproxy-vscode
 cd gmm-haproxy-vscode
-npm install
+npm ci
+npm ci --legacy-peer-deps --prefix client
+npm ci --legacy-peer-deps --prefix server
 ```
 
 **Run the extension in VSCode:**
@@ -44,6 +52,18 @@ npm run watch
 npm run test:unit         # parser, validator, completion, hover, grammar, formatter
 npm run test:integration  # VSCode extension activation + LSP handshake
 npm test                  # both
+```
+
+For small documentation-only changes, run:
+
+```bash
+git diff --check
+```
+
+For directive data or validation changes, run the focused validator suite first:
+
+```bash
+npm run test:unit -- test/validator/validator.test.ts
 ```
 
 **Coverage:**
@@ -81,6 +101,10 @@ test/fixtures/                 Real HAProxy config files used in tests
 1. Open `server/src/data/directives.ts` (proxy directives) or `server/src/data/global.ts` (global section).
 2. Add an entry following the existing pattern — include `name`, `signature`, `description`, `sections`, `since`, and optionally `deprecated`, `removed`, `httpOnly`, `tcpOnly`, `docsUrl`.
 3. Add a test in `test/validator/validator.test.ts` that validates the directive in its correct section and, if applicable, in a wrong section.
+4. Link to official HAProxy documentation in `docsUrl`.
+5. Keep descriptions short enough to be useful in completion and hover UI.
+
+If you are not sure where to start, open a directive data issue and include the official HAProxy docs URL.
 
 ---
 
@@ -108,10 +132,11 @@ All commits must pass: `npm run lint && npm run compile && npm run test:unit`.
 
 - [ ] `npm run lint` passes
 - [ ] `npm run compile` passes
-- [ ] `npm test` passes
+- [ ] `npm run test:unit` passes
 - [ ] New directives have validator tests
 - [ ] New language features have unit tests
 - [ ] Coverage stays above 80% on modified modules
+- [ ] No production secrets, certificates, tokens, or internal configs are included
 
 ---
 
@@ -126,9 +151,13 @@ All commits must pass: `npm run lint && npm run compile && npm run test:unit`.
 
 ## Reporting Bugs
 
-Open an issue at [github.com/gmm/gmm-haproxy-vscode/issues](https://github.com/gmm/gmm-haproxy-vscode/issues) with:
+Open an issue at [github.com/JuanTorchia/gmm-haproxy-vscode/issues](https://github.com/JuanTorchia/gmm-haproxy-vscode/issues) with:
 - VSCode version
 - Extension version
 - HAProxy version setting
 - The HAProxy config snippet that triggers the issue
 - Expected vs actual behavior
+
+Use a minimal sanitized config. Do not include production secrets, private keys, certificates, tokens, internal hostnames, or full production configs.
+
+Security vulnerabilities should be reported privately. See [SECURITY.md](SECURITY.md).

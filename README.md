@@ -201,11 +201,21 @@ This extension brings the config editing experience up to the same level as edit
 
 Issues and pull requests are welcome at [github.com/JuanTorchia/gmm-haproxy-vscode](https://github.com/JuanTorchia/gmm-haproxy-vscode).
 
+Useful starting points:
+
+- [Roadmap](ROADMAP.md) — what is planned for v1.0 and later
+- [Good first issues](GOOD_FIRST_ISSUES.md) — small, useful starter tasks
+- [Contributing guide](CONTRIBUTING.md) — setup, tests, project layout, PR expectations
+- [Support](SUPPORT.md) — where to report bugs, request features, or ask questions
+- [Security policy](SECURITY.md) — how to report vulnerabilities privately
+
 **To run locally:**
 ```bash
 git clone https://github.com/JuanTorchia/gmm-haproxy-vscode
 cd gmm-haproxy-vscode
-npm install --legacy-peer-deps
+npm ci
+npm ci --legacy-peer-deps --prefix client
+npm ci --legacy-peer-deps --prefix server
 npm run compile
 ```
 
@@ -214,7 +224,8 @@ Then press `F5` in VS Code to open an Extension Development Host with the extens
 **Before submitting a PR:**
 - `npm run lint` must pass
 - `npm run compile` must pass
-- `npm test` must pass
+- `npm run test:unit` must pass for most changes
+- `npm test` must pass before larger runtime or integration changes
 
 ---
 
