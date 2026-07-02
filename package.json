@@ -155,6 +155,7 @@
     "test:unit": "jest --testPathPatterns=\"test/(parser|validator|completion|hover|grammar|formatter|symbols|definition|codeactions|folding)\"",
     "test:integration": "node ./test/integration/runTests.js",
     "package": "vsce package",
+    "package:check": "node scripts/check-vsix-contents.cjs",
     "publish": "vsce publish"
   },
   "devDependencies": {

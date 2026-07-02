@@ -47,6 +47,9 @@ jobs:
       - name: Package extension
         run: npx vsce package --no-dependencies
 
+      - name: Inspect package contents
+        run: npm run package:check
+
       - name: Publish to Marketplace
         run: npx vsce publish --no-dependencies --pat ${{ secrets.VSCE_PAT }}
 

@@ -103,4 +103,18 @@ module.exports = [
       '@typescript-eslint/no-unsafe-enum-comparison': 'off',
     },
   },
+
+  // Repository maintenance scripts run in Node.js but are not extension runtime code.
+  {
+    files: ['scripts/**/*.cjs'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      'no-console': 'off',
+    },
+  },
 ];

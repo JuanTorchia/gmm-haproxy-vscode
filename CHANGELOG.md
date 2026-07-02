@@ -10,6 +10,7 @@ See [docs/release.md](docs/release.md) for changelog and release-note rules.
 
 ### Added
 - Release and changelog policy documenting how GitHub Release notes and VS Code Marketplace notes must be derived from `CHANGELOG.md`.
+- VS Code package contents guard that blocks publishing when local credentials, keys, source maps, tests, or generated junk would be bundled.
 
 ## [0.2.0] — 2026-06-30 ([@RevLaw](https://github.com/RevLaw))
 

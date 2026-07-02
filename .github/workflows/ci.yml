@@ -51,3 +51,6 @@ jobs:
 
       - name: Package extension (dry-run)
         run: npx vsce package --no-dependencies
+
+      - name: Inspect package contents
+        run: npm run package:check
