@@ -3,8 +3,13 @@
 All notable changes to HAProxy Config extension will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+Release notes for GitHub and VS Code Marketplace must be derived from this file.
+See [docs/release.md](docs/release.md) for changelog and release-note rules.
 
 ## [Unreleased]
+
+### Added
+- Release and changelog policy documenting how GitHub Release notes and VS Code Marketplace notes must be derived from `CHANGELOG.md`.
 
 ## [0.2.0] — 2026-06-30 ([@RevLaw](https://github.com/RevLaw))
 

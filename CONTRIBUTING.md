@@ -7,6 +7,7 @@ Good first places to start:
 - [Good first issues](GOOD_FIRST_ISSUES.md)
 - [Roadmap](ROADMAP.md)
 - [Support guide](SUPPORT.md)
+- [Release and changelog policy](docs/release.md)
 
 ---
 
@@ -128,11 +129,26 @@ All commits must pass: `npm run lint && npm run compile && npm run test:unit`.
 
 ---
 
+## Changelog and Release Notes
+
+Every user-visible change must update `CHANGELOG.md` under `## [Unreleased]` in the same pull request.
+
+User-visible means the change affects extension behavior, diagnostics, completions, hover text, formatting, snippets, supported HAProxy versions, packaging, Marketplace presentation, release automation, or security posture.
+
+Do not add changelog entries for internal refactors unless maintainers or contributors need to know about the change.
+
+Before a release, maintainers move `Unreleased` entries into a versioned section and derive both GitHub Release notes and VS Code Marketplace notes from `CHANGELOG.md`.
+
+See [docs/release.md](docs/release.md) for the full policy.
+
+---
+
 ## Pull Request Checklist
 
 - [ ] `npm run lint` passes
 - [ ] `npm run compile` passes
 - [ ] `npm run test:unit` passes
+- [ ] `CHANGELOG.md` updated, or the PR is internal-only and does not need a changelog entry
 - [ ] New directives have validator tests
 - [ ] New language features have unit tests
 - [ ] Coverage stays above 80% on modified modules

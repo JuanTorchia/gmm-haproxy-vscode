@@ -249,3 +249,5 @@ Before tagging a release:
 - [ ] `npm run build` produces valid `.vsix`
 
 Tag format: `v1.0.0`. The publish workflow triggers automatically on tags matching `v*.*.*`.
+
+Release notes for GitHub and VS Code Marketplace must be derived from `CHANGELOG.md`. See [release.md](./release.md).

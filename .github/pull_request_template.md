@@ -18,6 +18,11 @@ Describe what changed and why.
 - [ ] `npm run test:unit`
 - [ ] Manual VS Code extension test, if UI behavior changed
 
+## Changelog
+
+- [ ] `CHANGELOG.md` updated under `Unreleased`
+- [ ] Not needed because this is internal-only and has no user, contributor, Marketplace, release, or security impact
+
 ## Risk
 
 - [ ] No production secrets, certificates, tokens, or internal configs are included.
