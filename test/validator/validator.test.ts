@@ -464,6 +464,46 @@ describe('ValidationProvider', () => {
     });
   });
 
+  describe('stick-table directive coverage', () => {
+    it('accepts stick-table and stick storage rules in backend sections', () => {
+      const text = [
+        'frontend http',
+        '    bind 192.0.2.10:80',
+        '    default_backend rate_limited_api',
+        '',
+        'backend rate_limited_api',
+        '    stick-table type ip size 100k expire 30m store http_req_rate(10s),conn_rate(30s)',
+        '    stick store-request src',
+        '    stick store-response src',
+        '    server api1 198.51.100.10:8080 check',
+      ].join('\n');
+
+      const diags = validate(text);
+
+      expect(diags).toHaveLength(0);
+    });
+
+    it('accepts stick-table in listen sections', () => {
+      const text = [
+        'listen tcp_rate_limit',
+        '    bind 192.0.2.10:9000',
+        '    mode tcp',
+        '    stick-table type ip size 50k expire 5m store conn_rate(10s)',
+        '    server app1 198.51.100.20:9000 check',
+      ].join('\n');
+
+      const diags = validate(text);
+
+      expect(diags).toHaveLength(0);
+    });
+
+    it('rejects stick rules in frontend sections', () => {
+      const diags = validate('frontend http\n    stick on src\n');
+
+      expect(diags.some((d) => d.message.includes('stick on') && d.message.includes('not valid'))).toBe(true);
+    });
+  });
+
   describe('per-version validation — HAProxy 2.4', () => {
     const v = '2.4';
 
