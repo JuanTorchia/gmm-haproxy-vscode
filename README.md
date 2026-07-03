@@ -54,7 +54,7 @@ Select your HAProxy version and get real-time diagnostics tailored to it. Direct
 
 Focused demo config: [`docs/demo-configs/09-undefined-backend.cfg`](docs/demo-configs/09-undefined-backend.cfg)
 
-![Undefined backend diagnostic demo](docs/images/09-undefined-backend.gif)
+![Undefined backend diagnostic screenshot](docs/images/09-undefined-backend.gif)
 
 ---
 
