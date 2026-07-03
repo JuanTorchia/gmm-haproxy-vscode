@@ -1112,6 +1112,7 @@ export const DIRECTIVES: DirectiveDef[] = [
     sections: LB,
     since: '1.4',
     category: 'stick',
+    docsUrl: `${DOCS}#stick-table`,
   },
   {
     name: 'stick match',
@@ -1120,6 +1121,7 @@ export const DIRECTIVES: DirectiveDef[] = [
     sections: LB,
     since: '1.4',
     category: 'stick',
+    docsUrl: `${DOCS}#stick-table`,
   },
   {
     name: 'stick store-request',
@@ -1128,6 +1130,7 @@ export const DIRECTIVES: DirectiveDef[] = [
     sections: LB,
     since: '1.4',
     category: 'stick',
+    docsUrl: `${DOCS}#stick-table`,
   },
   {
     name: 'stick store-response',
@@ -1136,6 +1139,7 @@ export const DIRECTIVES: DirectiveDef[] = [
     sections: LB,
     since: '1.4',
     category: 'stick',
+    docsUrl: `${DOCS}#stick-table`,
   },
 
   // ─── TCP-CHECK ────────────────────────────────────────────────────────────
