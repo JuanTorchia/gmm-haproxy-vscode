@@ -37,6 +37,13 @@ const demos = [
       '04-hover-timeout.png',
     ],
   },
+  {
+    output: '09-undefined-backend.gif',
+    delay: 160,
+    frames: [
+      '09-undefined-backend.png',
+    ],
+  },
 ];
 
 function requireMagick() {

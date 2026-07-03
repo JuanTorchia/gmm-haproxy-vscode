@@ -11,6 +11,7 @@ See [docs/release.md](docs/release.md) for changelog and release-note rules.
 ### Added
 - Contributor and release documentation now require README and Marketplace demo GIFs/screenshots to stay current with editor-visible changes.
 - Public roadmap discussions and a `v0.3.0` milestone now guide future work from user pain points to actionable issues.
+- Focused undefined-backend diagnostic demo config and GIF source for README/Marketplace visual updates.
 
 ## [0.2.1] — 2026-07-02
 
