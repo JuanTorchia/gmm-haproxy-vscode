@@ -152,7 +152,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "npm run test:unit && npm run test:integration",
-    "test:unit": "jest test/parser test/validator test/completion test/hover test/grammar test/formatter test/symbols test/definition test/codeactions test/folding test/registry test/settings",
+    "test:unit": "jest test/parser test/validator test/completion test/hover test/grammar test/formatter test/symbols test/definition test/codeactions test/folding test/registry test/settings test/client",
     "test:integration": "node ./test/integration/runTests.js",
     "package": "vsce package",
     "package:check": "node scripts/check-vsix-contents.cjs",
