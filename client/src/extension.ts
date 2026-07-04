@@ -13,6 +13,7 @@ import {
   ServerOptions,
   TransportKind,
 } from 'vscode-languageclient/node';
+import { restartLanguageServer, startLanguageServer } from './languageServerLifecycle';
 
 let client: LanguageClient | undefined;
 let statusBarItem: StatusBarItem | undefined;
@@ -24,8 +25,9 @@ export function activate(context: ExtensionContext): void {
 
     registerCommands(context, client, statusBarItem);
 
-    void client.start().then(() => {
-      updateStatusBar(statusBarItem);
+    void startLanguageServer(client, {
+      onStarted: () => updateStatusBar(statusBarItem),
+      showErrorMessage: window.showErrorMessage,
     });
   } catch (err) {
     void window.showErrorMessage(
@@ -85,10 +87,11 @@ function registerCommands(
 ): void {
   context.subscriptions.push(
     commands.registerCommand('haproxy.restartServer', async () => {
-      await lsClient.stop();
-      await lsClient.start();
-      updateStatusBar(statusBar);
-      void window.showInformationMessage('HAProxy language server restarted.');
+      await restartLanguageServer(lsClient, {
+        onStarted: () => updateStatusBar(statusBar),
+        showErrorMessage: window.showErrorMessage,
+        showInformationMessage: window.showInformationMessage,
+      });
     })
   );
 
