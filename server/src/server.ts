@@ -39,7 +39,7 @@ import { DefinitionProvider } from './definition/definitionProvider';
 import { CodeActionsProvider } from './codeactions/codeActionsProvider';
 import { FoldingProvider } from './folding/foldingProvider';
 import { VersionRegistry } from './registry/versionRegistry';
-import { ServerSettings, DEFAULT_SETTINGS } from './settings';
+import { ServerSettings, DEFAULT_SETTINGS, parseServerSettings } from './settings';
 import { DocumentHighlightProvider } from './highlights/documentHighlightProvider';
 import { ReferencesProvider } from './references/referencesProvider';
 import { RenameProvider } from './rename/renameProvider';
@@ -224,11 +224,7 @@ async function refreshSettings(): Promise<void> {
   if (!hasConfigurationCapability) return;
   try {
     const config: unknown = await connection.workspace.getConfiguration('haproxy');
-    settings = {
-      version: (config as Record<string, unknown>).version as string ?? DEFAULT_SETTINGS.version,
-      validationEnabled: (config as Record<string, unknown>)['validate.enable'] as boolean ?? DEFAULT_SETTINGS.validationEnabled,
-      completionEnabled: (config as Record<string, unknown>)['completion.enable'] as boolean ?? DEFAULT_SETTINGS.completionEnabled,
-    };
+    settings = parseServerSettings(config);
   } catch {
     connection.console.error('Failed to retrieve HAProxy settings, using defaults.');
   }
