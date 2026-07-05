@@ -21,8 +21,12 @@ Tests run **without VSCode** — the language server modules are imported direct
 # All unit tests
 npm run test:unit
 
-# With coverage report
-npm test -- --coverage
+# VSCode extension integration tests
+npm run build
+npm run test:integration
+
+# Full local suite
+npm test
 
 # Single file
 npx jest test/parser/parser.test.ts
