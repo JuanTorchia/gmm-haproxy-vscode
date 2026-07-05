@@ -43,12 +43,18 @@ import { ServerSettings, DEFAULT_SETTINGS, parseServerSettings } from './setting
 import { DocumentHighlightProvider } from './highlights/documentHighlightProvider';
 import { ReferencesProvider } from './references/referencesProvider';
 import { RenameProvider } from './rename/renameProvider';
+import {
+  MAX_VALIDATION_LINE_COUNT,
+  OversizedDocumentTracker,
+  shouldSkipValidationForLineCount,
+} from './documentSizePolicy';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments<TextDocument>(TextDocument);
 
 const astCache = new Map<string, HaproxyDocument>();
 const validationTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const oversizedDocuments = new OversizedDocumentTracker();
 
 let settings: ServerSettings = { ...DEFAULT_SETTINGS };
 let registry: VersionRegistry;
@@ -90,16 +96,21 @@ connection.onInitialized(() => {
 
 connection.onDidChangeConfiguration(() => {
   void refreshSettings().then(() => {
-    documents.all().forEach((doc) => scheduleValidation(doc));
+    documents.all().forEach((doc) => {
+      if (handleOversizedDocument(doc)) return;
+      scheduleValidation(doc);
+    });
   });
 });
 
 documents.onDidOpen((event) => {
+  if (handleOversizedDocument(event.document)) return;
   parseDocument(event.document);
   scheduleValidation(event.document);
 });
 
 documents.onDidChangeContent((event) => {
+  if (handleOversizedDocument(event.document)) return;
   parseDocument(event.document);
   scheduleValidation(event.document);
 });
@@ -109,6 +120,7 @@ documents.onDidClose((event) => {
   const timer = validationTimers.get(event.document.uri);
   if (timer) clearTimeout(timer);
   validationTimers.delete(event.document.uri);
+  oversizedDocuments.delete(event.document.uri);
   void connection.sendDiagnostics({ uri: event.document.uri, diagnostics: [] });
 });
 
@@ -191,12 +203,20 @@ connection.onDocumentFormatting((params: DocumentFormattingParams): TextEdit[] =
 });
 
 function parseDocument(doc: TextDocument): void {
+  if (isOversizedDocument(doc)) {
+    astCache.delete(doc.uri);
+    return;
+  }
   const parser = new HaproxyParser();
   const ast = parser.parse(doc.getText(), doc.uri);
   astCache.set(doc.uri, ast);
 }
 
 function scheduleValidation(doc: TextDocument): void {
+  if (isOversizedDocument(doc)) {
+    clearPendingValidation(doc.uri);
+    return;
+  }
   const existing = validationTimers.get(doc.uri);
   if (existing) clearTimeout(existing);
 
@@ -209,6 +229,7 @@ function scheduleValidation(doc: TextDocument): void {
 }
 
 function validateDocument(doc: TextDocument): void {
+  if (handleOversizedDocument(doc)) return;
   if (!settings.validationEnabled) {
     void connection.sendDiagnostics({ uri: doc.uri, diagnostics: [] });
     return;
@@ -228,6 +249,35 @@ async function refreshSettings(): Promise<void> {
   } catch {
     connection.console.error('Failed to retrieve HAProxy settings, using defaults.');
   }
+}
+
+function handleOversizedDocument(doc: TextDocument): boolean {
+  if (!isOversizedDocument(doc)) {
+    oversizedDocuments.markAllowed(doc.uri);
+    return false;
+  }
+
+  astCache.delete(doc.uri);
+  clearPendingValidation(doc.uri);
+  void connection.sendDiagnostics({ uri: doc.uri, diagnostics: [] });
+
+  if (oversizedDocuments.markSkipped(doc.uri)) {
+    void connection.window.showInformationMessage(
+      `HAProxy diagnostics skipped for this file because it has ${doc.lineCount} lines, above the ${MAX_VALIDATION_LINE_COUNT} line limit. Syntax highlighting remains active.`
+    );
+  }
+
+  return true;
+}
+
+function isOversizedDocument(doc: TextDocument): boolean {
+  return shouldSkipValidationForLineCount(doc.lineCount);
+}
+
+function clearPendingValidation(uri: string): void {
+  const timer = validationTimers.get(uri);
+  if (timer) clearTimeout(timer);
+  validationTimers.delete(uri);
 }
 
 documents.listen(connection);
