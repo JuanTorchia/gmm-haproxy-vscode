@@ -29,6 +29,8 @@ npm ci --legacy-peer-deps --prefix server
 
 Press `F5` — this opens an Extension Development Host with the extension loaded. Open any `.cfg` file to activate it.
 
+If you hit local startup issues, see the troubleshooting notes in [docs/development.md](docs/development.md).
+
 **Compile (type-check only):**
 
 ```bash
