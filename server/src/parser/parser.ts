@@ -15,6 +15,14 @@ const SECTION_KEYWORDS = new Set<string>([
   'log-forward', 'program', 'http-errors', 'cache',
 ]);
 
+/** Physical source segment that contributes tokens to one logical continued directive. */
+interface LogicalLineSegment {
+  readonly text: string;
+  readonly lineIndex: number;
+  readonly startOffset: number;
+  readonly rawLine: string;
+}
+
 /**
  * Fault-tolerant HAProxy config parser.
  * Produces a typed AST even for partial or broken configs.
@@ -36,14 +44,31 @@ export class HaproxyParser {
       if (trimmed === '') continue;
 
       // Handle line continuation (backslash at end)
-      let fullLine = trimmed;
-      while (fullLine.endsWith('\\') && lineIndex + 1 < lines.length) {
+      const startLineIndex = lineIndex;
+      const segments: LogicalLineSegment[] = [
+        {
+          text: trimContinuationMarker(trimmed),
+          lineIndex,
+          startOffset: indentLength,
+          rawLine,
+        },
+      ];
+      let continuedLine = trimmed;
+      while (continuedLine.endsWith('\\') && lineIndex + 1 < lines.length) {
         lineIndex++;
         const nextRaw = lines[lineIndex] ?? '';
-        fullLine = fullLine.slice(0, -1).trim() + ' ' + stripComment(nextRaw).trim();
+        const nextLine = stripComment(nextRaw);
+        const nextTrimmed = nextLine.trim();
+        segments.push({
+          text: trimContinuationMarker(nextTrimmed),
+          lineIndex,
+          startOffset: nextLine.length - nextLine.trimStart().length,
+          rawLine: nextRaw,
+        });
+        continuedLine = nextTrimmed;
       }
 
-      const tokens = tokenizeLine(fullLine, lineIndex, indentLength);
+      const tokens = tokenizeSegments(segments);
       if (tokens.length === 0) continue;
 
       const firstToken = tokens[0];
@@ -69,15 +94,15 @@ export class HaproxyParser {
           name,
           nameToken,
           fromToken,
-          makeRange(lineIndex, 0, lineIndex, rawLine.length)
+          makeRange(startLineIndex, 0, startLineIndex, rawLine.length)
         );
       } else if (currentSection) {
-        const directive = buildDirective(tokens, rawLine, lineIndex);
+        const directive = buildDirective(tokens, segments);
         currentSection.addDirective(directive);
       } else {
         parseErrors.push({
           message: `Directive '${firstToken.value}' appears outside of any section.`,
-          range: makeRange(lineIndex, 0, lineIndex, rawLine.length),
+          range: makeRange(startLineIndex, 0, startLineIndex, rawLine.length),
         });
       }
     }
@@ -153,24 +178,31 @@ function resolveMode(sections: HaproxySection[]): void {
 
 function buildDirective(
   tokens: Token[],
-  rawLine: string,
-  lineIndex: number
+  segments: readonly LogicalLineSegment[]
 ): HaproxyDirective {
+  const firstSegment = segments[0];
+  const lastSegment = segments[segments.length - 1];
+  const startLine = firstSegment?.lineIndex ?? 0;
+  const endLine = lastSegment?.lineIndex ?? startLine;
+  const endChar = lastSegment?.rawLine.trimEnd().length ?? 0;
   const [keywordToken, ...argTokens] = tokens;
-  const keyword = keywordToken ?? { value: '', range: makeRange(lineIndex, 0, lineIndex, 0) };
+  const keyword = keywordToken ?? { value: '', range: makeRange(startLine, 0, startLine, 0) };
 
   const args: DirectiveArg[] = argTokens.map((t) => ({
     value: t.value,
     range: t.range,
   }));
 
-  const endChar = rawLine.trimEnd().length;
   return {
     keyword,
     args,
-    range: makeRange(lineIndex, 0, lineIndex, endChar),
-    raw: rawLine,
+    range: makeRange(startLine, 0, endLine, endChar),
+    raw: firstSegment?.rawLine ?? '',
   };
+}
+
+function trimContinuationMarker(line: string): string {
+  return line.endsWith('\\') ? line.slice(0, -1).trimEnd() : line;
 }
 
 function stripComment(line: string): string {
@@ -190,39 +222,47 @@ function stripComment(line: string): string {
   return line;
 }
 
-function tokenizeLine(line: string, lineIndex: number, startOffset = 0): Token[] {
+function tokenizeSegments(segments: readonly LogicalLineSegment[]): Token[] {
   const tokens: Token[] = [];
-  let i = 0;
 
-  while (i < line.length) {
-    // Skip whitespace
-    while (i < line.length && /\s/.test(line[i] ?? '')) i++;
-    if (i >= line.length) break;
+  for (const segment of segments) {
+    const line = segment.text;
+    let i = 0;
 
-    const start = i + startOffset;
-    let value = '';
+    while (i < line.length) {
+      while (i < line.length && /\s/.test(line[i] ?? '')) i++;
+      if (i >= line.length) break;
 
-    if (line[i] === '"' || line[i] === "'") {
-      const quoteChar = line[i];
-      i++;
-      while (i < line.length && line[i] !== quoteChar) {
-        if (line[i] === '\\') i++;
-        value += line[i] ?? '';
+      const start = i + segment.startOffset;
+      let value = '';
+
+      if (line[i] === '"' || line[i] === "'") {
+        const quoteChar = line[i];
         i++;
+        while (i < line.length && line[i] !== quoteChar) {
+          if (line[i] === '\\') i++;
+          value += line[i] ?? '';
+          i++;
+        }
+        i++; // closing quote
+      } else {
+        while (i < line.length && !/\s/.test(line[i] ?? '')) {
+          value += line[i] ?? '';
+          i++;
+        }
       }
-      i++; // closing quote
-    } else {
-      while (i < line.length && !/\s/.test(line[i] ?? '')) {
-        value += line[i] ?? '';
-        i++;
-      }
-    }
 
-    if (value !== '') {
-      tokens.push({
-        value,
-        range: makeRange(lineIndex, start, lineIndex, i + startOffset),
-      });
+      if (value !== '') {
+        tokens.push({
+          value,
+          range: makeRange(
+            segment.lineIndex,
+            start,
+            segment.lineIndex,
+            i + segment.startOffset
+          ),
+        });
+      }
     }
   }
 

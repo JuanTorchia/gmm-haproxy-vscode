@@ -104,7 +104,7 @@ export class ValidationProvider {
       const msg = nearestVersion
         ? `Unknown directive '${displayName}'. It may be available since HAProxy ${nearestVersion}.`
         : `Unknown directive '${displayName}'.`;
-      out.push(error(toRange(directive.range), msg));
+      out.push(error(toRange(directive.keyword.range), msg));
       return;
     }
 
