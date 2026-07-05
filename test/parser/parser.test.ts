@@ -99,6 +99,38 @@ describe('HaproxyParser', () => {
     expect(frontend?.mode).toBe('http');
   });
 
+  it('resolves mode from named defaults section', () => {
+    const text = [
+      'defaults tcp-defaults',
+      '    mode tcp',
+      '',
+      'defaults http-defaults',
+      '    mode http',
+      '',
+      'frontend tcp-in from tcp-defaults',
+      '    bind *:443',
+      '',
+      'backend web from http-defaults',
+      '    server web1 10.0.0.1:8080',
+    ].join('\n');
+
+    const doc = parser.parse(text, 'test://named-defaults-mode');
+    const frontend = doc.sections.find((s) => s.type === 'frontend');
+    const backend = doc.sections.find((s) => s.type === 'backend');
+
+    expect(frontend?.mode).toBe('tcp');
+    expect(backend?.mode).toBe('http');
+  });
+
+  it('does not mutate readonly AST mode fields after section construction', () => {
+    const source = fs.readFileSync(
+      path.join(__dirname, '../../server/src/parser/parser.ts'),
+      'utf8',
+    );
+
+    expect(source).not.toContain('(section as { mode?:');
+  });
+
   it('handles quoted string arguments', () => {
     const text = `backend web\n    http-request set-header X-Custom "hello world"\n`;
     const doc = parser.parse(text, 'test://quoted');

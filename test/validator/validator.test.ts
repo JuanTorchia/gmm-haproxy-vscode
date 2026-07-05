@@ -116,6 +116,34 @@ describe('ValidationProvider', () => {
       const diags = validate(text);
       expect(diags.some((d) => d.message.includes('TCP mode'))).toBe(true);
     });
+
+    it('applies unnamed defaults mode to validation', () => {
+      const text = [
+        'defaults',
+        '    mode tcp',
+        '',
+        'frontend tcp-in',
+        '    http-request deny',
+      ].join('\n');
+
+      const diags = validate(text);
+
+      expect(diags.some((d) => d.message.includes('HTTP mode'))).toBe(true);
+    });
+
+    it('applies named defaults mode to validation', () => {
+      const text = [
+        'defaults http-defaults',
+        '    mode http',
+        '',
+        'frontend http-in from http-defaults',
+        '    http-request deny',
+      ].join('\n');
+
+      const diags = validate(text);
+
+      expect(diags.filter((d) => d.message.includes('HTTP mode'))).toHaveLength(0);
+    });
   });
 
   describe('deprecated directives', () => {
