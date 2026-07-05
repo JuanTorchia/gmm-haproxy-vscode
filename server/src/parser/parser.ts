@@ -30,7 +30,7 @@ interface LogicalLineSegment {
 export class HaproxyParser {
   parse(text: string, uri: string): HaproxyDocument {
     const lines = text.split(/\r?\n/);
-    const sections: HaproxySection[] = [];
+    const sectionBuilders: SectionBuilder[] = [];
     const parseErrors: ParseError[] = [];
 
     let currentSection: SectionBuilder | null = null;
@@ -77,7 +77,7 @@ export class HaproxyParser {
 
       if (SECTION_KEYWORDS.has(keyword)) {
         if (currentSection) {
-          sections.push(currentSection.build());
+          sectionBuilders.push(currentSection);
         }
 
         // Detect optional `from <defaults-name>` clause in the section header
@@ -108,12 +108,10 @@ export class HaproxyParser {
     }
 
     if (currentSection) {
-      sections.push(currentSection.build());
+      sectionBuilders.push(currentSection);
     }
 
-    // Resolve mode inheritance from defaults
-    resolveMode(sections);
-
+    const sections = buildSections(sectionBuilders);
     return { uri, sections, parseErrors };
   }
 }
@@ -129,16 +127,29 @@ class SectionBuilder {
     private readonly headerRange: SourceRange
   ) {}
 
+  get sectionType(): SectionType {
+    return this.type;
+  }
+
+  get sectionName(): string {
+    return this.name;
+  }
+
+  get inheritedFrom(): Token | undefined {
+    return this.fromToken;
+  }
+
   addDirective(directive: HaproxyDirective): void {
     this.directives.push(directive);
   }
 
-  build(): HaproxySection {
+  ownMode(): 'http' | 'tcp' | undefined {
     const modeDirective = this.directives.find((d) => d.keyword.value === 'mode');
     const modeValue = modeDirective?.args[0]?.value;
-    const mode: 'http' | 'tcp' | undefined =
-      modeValue === 'http' || modeValue === 'tcp' ? modeValue : undefined;
+    return modeValue === 'http' || modeValue === 'tcp' ? modeValue : undefined;
+  }
 
+  build(mode = this.ownMode()): HaproxySection {
     return {
       type: this.type,
       name: this.name,
@@ -151,29 +162,33 @@ class SectionBuilder {
   }
 }
 
-function resolveMode(sections: HaproxySection[]): void {
-  // Index all defaults sections by name (empty string = the unnamed/global defaults)
-  const defaultsByName = new Map<string, HaproxySection>();
-  for (const s of sections) {
-    if (s.type === 'defaults') {
-      defaultsByName.set(s.name.toLowerCase(), s);
+function buildSections(sectionBuilders: readonly SectionBuilder[]): HaproxySection[] {
+  const defaultsModesByName = new Map<string, 'http' | 'tcp'>();
+  for (const builder of sectionBuilders) {
+    if (builder.sectionType === 'defaults') {
+      const mode = builder.ownMode();
+      if (mode) defaultsModesByName.set(builder.sectionName.toLowerCase(), mode);
     }
   }
 
-  for (const section of sections) {
-    if (section.type !== 'frontend' && section.type !== 'backend' && section.type !== 'listen') {
-      continue;
-    }
-    if (section.mode) continue;
+  return sectionBuilders.map((builder) => builder.build(resolveMode(builder, defaultsModesByName)));
+}
 
-    // Use the named defaults referenced by `from`, falling back to the unnamed defaults.
-    const key = section.from ? section.from.value.toLowerCase() : '';
-    const defaultMode = defaultsByName.get(key)?.mode;
-    if (defaultMode) {
-      // Cast required because mode is readonly — we mutate during build resolution only
-      (section as { mode?: 'http' | 'tcp' }).mode = defaultMode;
-    }
-  }
+function resolveMode(
+  section: SectionBuilder,
+  defaultsModesByName: ReadonlyMap<string, 'http' | 'tcp'>
+): 'http' | 'tcp' | undefined {
+  const ownMode = section.ownMode();
+  if (ownMode) return ownMode;
+
+  if (
+    section.sectionType !== 'frontend' &&
+    section.sectionType !== 'backend' &&
+    section.sectionType !== 'listen'
+  ) return undefined;
+
+  const key = section.inheritedFrom ? section.inheritedFrom.value.toLowerCase() : '';
+  return defaultsModesByName.get(key);
 }
 
 function buildDirective(
