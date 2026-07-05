@@ -24,6 +24,19 @@ describe('ValidationProvider', () => {
       expect(diags[0]?.message).toMatch(/unknown directive/i);
     });
 
+    it('reports continued unknown directive diagnostics on the starting line', () => {
+      const diags = validate([
+        'backend web',
+        '    notadirective foo \\',
+        '        bar',
+      ].join('\n')).filter((d) => d.severity === DiagnosticSeverity.Error);
+
+      expect(diags).toHaveLength(1);
+      expect(diags[0]?.message).toMatch(/unknown directive/i);
+      expect(diags[0]?.range.start.line).toBe(1);
+      expect(diags[0]?.range.start.character).toBe(4);
+    });
+
     it('passes for known directive in correct section', () => {
       const diags = validate('frontend main\n    use_backend web\nbackend web\n    balance roundrobin\n');
       expect(diags).toHaveLength(0);

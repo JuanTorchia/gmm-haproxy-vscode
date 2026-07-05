@@ -52,6 +52,33 @@ describe('HaproxyParser', () => {
     expect(directive?.args).toHaveLength(2);
   });
 
+  it('keeps continued directive keyword ranges on the starting line', () => {
+    const text = [
+      'frontend http-in',
+      '    http-request set-header X-Long value \\',
+      '        if { path_beg /api }',
+    ].join('\n');
+
+    const doc = parser.parse(text, 'test://continuation-range');
+    const directive = doc.sections[0]?.directives[0];
+
+    expect(directive?.keyword.value).toBe('http-request');
+    expect(directive?.keyword.range).toEqual({
+      startLine: 1,
+      startCharacter: 4,
+      endLine: 1,
+      endCharacter: 16,
+    });
+    expect(directive?.range.startLine).toBe(1);
+    expect(directive?.args[3]?.value).toBe('if');
+    expect(directive?.args[3]?.range).toEqual({
+      startLine: 2,
+      startCharacter: 8,
+      endLine: 2,
+      endCharacter: 10,
+    });
+  });
+
   it('reports directive outside section as parse error', () => {
     const text = `maxconn 50000\n`;
     const doc = parser.parse(text, 'test://outside');
