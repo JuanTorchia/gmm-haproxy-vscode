@@ -77,7 +77,8 @@ All scripts are run from the **repository root**.
 | `npm run watch` | esbuild watch | Rebuild on file change (dev mode). |
 | `npm run lint` | `eslint . --ext .ts` | Run ESLint across all TypeScript files. |
 | `npm run test:unit` | jest | Run parser and validator unit tests. |
-| `npm test` | jest + coverage | Full test run with coverage report. |
+| `npm run test:integration` | `@vscode/test-electron` | Run VSCode extension integration tests. Downloads VSCode on first run. |
+| `npm test` | unit + integration | Full test run. |
 
 ---
 
@@ -98,6 +99,15 @@ npm run test:unit
 ```
 
 19 tests, ~4 seconds. Run after any change to parser, validator, or registry.
+
+Run the VSCode integration suite after changes that affect activation, packaging, client/server wiring, or language features in the editor:
+
+```bash
+npm run build
+npm run test:integration
+```
+
+On Linux CI, integration tests run under `xvfb-run` because VSCode Electron needs a display server.
 
 ### 3. Test in VSCode
 

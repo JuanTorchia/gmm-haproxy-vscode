@@ -38,11 +38,14 @@ jobs:
       - name: Security audit
         run: npm audit --audit-level=high
 
-      - name: Run tests
+      - name: Unit tests
         run: npm run test:unit
 
       - name: Build bundles
         run: npm run build
+
+      - name: Integration tests
+        run: xvfb-run -a npm run test:integration
 
       - name: Package extension
         run: npx vsce package --no-dependencies
