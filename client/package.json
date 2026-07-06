@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "vscode-languageclient": "^10.0.1"
+    "vscode-languageclient": "^10.1.0"
   },
   "devDependencies": {
     "@types/vscode": "^1.125.0"
