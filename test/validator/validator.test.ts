@@ -685,6 +685,62 @@ describe('ValidationProvider', () => {
     });
   });
 
+  describe('version-gated directives — available only in newer HAProxy versions', () => {
+    describe('ssl-security-level (introduced in 2.8)', () => {
+      const config = 'global\n    ssl-security-level 1\n';
+
+      it('is valid in 2.8', () => {
+        expect(validate(config, '2.8')).toHaveLength(0);
+      });
+
+      it('is valid in 3.1 (default)', () => {
+        expect(validate(config)).toHaveLength(0);
+      });
+
+      it('errors in 2.6 with an actionable since-version hint', () => {
+        const d = validate(config, '2.6')
+          .filter((diag) => diag.message.includes('ssl-security-level'));
+        expect(d).toHaveLength(1);
+        expect(d[0]?.severity).toBe(DiagnosticSeverity.Error);
+        expect(d[0]?.message).toContain('available since HAProxy 2.8');
+      });
+
+      it('errors in 2.4 with the same hint', () => {
+        const d = validate(config, '2.4')
+          .filter((diag) => diag.message.includes('ssl-security-level'));
+        expect(d).toHaveLength(1);
+        expect(d[0]?.message).toContain('available since HAProxy 2.8');
+      });
+    });
+
+    describe('ssl-provider (introduced in 3.0)', () => {
+      const config = 'global\n    ssl-provider default\n';
+
+      it('is valid in 3.0', () => {
+        expect(validate(config, '3.0')).toHaveLength(0);
+      });
+
+      it('is valid in 3.1 (default)', () => {
+        expect(validate(config)).toHaveLength(0);
+      });
+
+      it('errors in 2.8 with an actionable since-version hint', () => {
+        const d = validate(config, '2.8')
+          .filter((diag) => diag.message.includes('ssl-provider'));
+        expect(d).toHaveLength(1);
+        expect(d[0]?.severity).toBe(DiagnosticSeverity.Error);
+        expect(d[0]?.message).toContain('available since HAProxy 3.0');
+      });
+
+      it('errors in 2.4 with the same hint', () => {
+        const d = validate(config, '2.4')
+          .filter((diag) => diag.message.includes('ssl-provider'));
+        expect(d).toHaveLength(1);
+        expect(d[0]?.message).toContain('available since HAProxy 3.0');
+      });
+    });
+  });
+
   describe('fixtures', () => {
     it('validates the TLS termination fixture without errors', () => {
       const text = fs.readFileSync(
