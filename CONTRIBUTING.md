@@ -178,6 +178,49 @@ See [docs/images/README.md](docs/images/README.md) for the full visual asset wor
 
 ---
 
+## Dependabot Updates
+
+Dependabot opens weekly PRs for root npm dependencies, `client/` and `server/` npm dependencies, and GitHub Actions. Use this policy to review them consistently.
+
+**Usually safe to merge after green checks:**
+
+- Patch and minor bumps of development dependencies
+- GitHub Actions version bumps (e.g. `actions/setup-node`), when CI is green on the PR itself
+- Security updates for dependencies with no public API surface in this repo
+
+**Inspect changelogs or release notes before merging:**
+
+- Major version bumps of any dependency
+- Production dependencies that ship inside the extension bundle (`vscode-languageserver`, `vscode-languageclient`, etc.)
+- Test/tooling majors (Jest, ESLint, TypeScript, esbuild) — breaking changes can fail silently in config
+
+**Batching:**
+
+- Prefer Dependabot's grouped PRs for routine dev-dependency bumps.
+- Do not batch updates that need individual judgement (majors, production deps) with routine ones; merge those separately.
+- If a grouped PR contains one bump that violates repo policy, close it and let Dependabot re-create the group without that bump instead of merging and reverting.
+
+**`@types/vscode` pinning:**
+
+`@types/vscode` must stay aligned with `engines.vscode` in `package.json`. Never merge a bump of `@types/vscode` beyond the declared engine — TypeScript would then allow APIs that do not exist in the oldest VS Code version we support. It is pinned via an `ignore` rule in `.github/dependabot.yml`; only raise it when intentionally raising `engines.vscode`.
+
+**Security updates:**
+
+Review promptly, but still validate — a security fix is not exempt from verification. For transitive dev-only vulnerabilities, applying the fix locally and verifying is equivalent to merging the Dependabot PR.
+
+**Local validation before merge:**
+
+```bash
+npm run lint
+npm run compile
+npm test
+npm run package:check
+```
+
+Dependency updates do not affect README or Marketplace demo assets; state that in the PR when merging so the demo-visuals requirement is explicitly covered.
+
+---
+
 ## Pull Request Checklist
 
 - [ ] `npm run lint` passes
