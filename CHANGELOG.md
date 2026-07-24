@@ -8,6 +8,9 @@ See [docs/release.md](docs/release.md) for changelog and release-note rules.
 
 ## [Unreleased]
 
+### Changed
+- Backend and `server` snippets now use production-ready health checks: HTTP/1.1 `option httpchk` with `Host` header, `default-server` check timings, and no misleading `weight 1` default.
+
 ### Added
 - Contributor and release documentation now require README and Marketplace demo GIFs/screenshots to stay current with editor-visible changes.
 - Public roadmap discussions and a `v0.3.0` milestone now guide future work from user pain points to actionable issues.

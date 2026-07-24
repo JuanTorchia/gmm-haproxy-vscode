@@ -69,12 +69,13 @@
       "backend ${1:backend-name}",
       "    mode http",
       "    balance ${2|roundrobin,leastconn,source,random|}",
-      "    option httpchk ${3:GET} ${4:/health}",
-      "    http-check expect status 200",
-      "    server ${5:web1} ${6:10.0.0.1}:${7:8080} check inter ${8:2s} rise ${9:2} fall ${10:3}",
+      "    option httpchk ${3|GET,HEAD|} ${4:/health} HTTP/1.1\\r\\nHost:\\ ${5:localhost}",
+      "    http-check expect status ${6:200}",
+      "    default-server inter ${7:3s} rise ${8:2} fall ${9:3}",
+      "    server ${10:web1} ${11:10.0.0.1}:${12:8080} check",
       "$0"
     ],
-    "description": "HTTP backend with health check"
+    "description": "HTTP backend with production-ready health check"
   },
   "Backend HTTPS": {
     "prefix": "backend-ssl",
@@ -114,7 +115,7 @@
   },
   "server line": {
     "prefix": "server",
-    "body": "server ${1:web1} ${2:10.0.0.1}:${3:8080} check inter ${4:2s} rise ${5:2} fall ${6:3} weight ${7:1}",
+    "body": "server ${1:web1} ${2:10.0.0.1}:${3:8080} check inter ${4:3s} rise ${5:2} fall ${6:3}",
     "description": "Backend server with health check parameters"
   },
   "option httpchk": {
