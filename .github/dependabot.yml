@@ -24,6 +24,9 @@ updates:
         dependency-type: production
         patterns:
           - "*"
+    ignore:
+      # Keep @types/vscode aligned with engines.vscode in package.json (#31)
+      - dependency-name: "@types/vscode"
 
   - package-ecosystem: npm
     directory: /client
