@@ -27,6 +27,10 @@ updates:
     ignore:
       # Keep @types/vscode aligned with engines.vscode in package.json (#31)
       - dependency-name: "@types/vscode"
+      # TS 7 is unsupported by typescript-eslint 8.x; revisit on major bumps
+      - dependency-name: "typescript"
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: npm
     directory: /client
