@@ -185,6 +185,9 @@
     "vscode-languageserver-types": "3.18.0"
   },
   "overrides": {
-    "serialize-javascript": "7.0.5"
+    "serialize-javascript": "7.0.5",
+    "minimatch": "^10.2.6",
+    "brace-expansion": "^5.0.8",
+    "test-exclude": "^8.0.0"
   }
 }
