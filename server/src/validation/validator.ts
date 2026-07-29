@@ -3,6 +3,7 @@ import { HaproxyDocument, HaproxySection, HaproxyDirective, SourceRange } from '
 import { VersionRegistry, VERSION_EOL } from '../registry/versionRegistry';
 import { ACTIONS, ActionRulesets } from '../data/actions';
 import { validateCrossReferences, validateUnreferencedSymbols } from './validatorCrossRef';
+import { timeoutValueRule } from './rules/timeoutRule';
 
 const MAX_DIAGNOSTICS = 100;
 
@@ -159,6 +160,9 @@ export class ValidationProvider {
 
     // Validate action sub-keyword (e.g. http-request deny, tcp-request connection accept)
     this.validateAction(directive, def.name, out);
+
+    // Per-directive value rules
+    out.push(...timeoutValueRule(directive, { resolvedName: def.name }));
   }
 
   private validateAction(directive: HaproxyDirective, resolvedName: string, out: Diagnostic[]): void {
