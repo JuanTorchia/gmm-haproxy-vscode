@@ -8,14 +8,21 @@ See [docs/release.md](docs/release.md) for changelog and release-note rules.
 
 ## [Unreleased]
 
-### Changed
-- Backend and `server` snippets now use production-ready health checks: HTTP/1.1 `option httpchk` with `Host` header, `default-server` check timings, and no misleading `weight 1` default.
+## [0.3.0] — 2026-07-29
 
 ### Added
 - Contributor and release documentation now require README and Marketplace demo GIFs/screenshots to stay current with editor-visible changes.
 - Public roadmap discussions and a `v0.3.0` milestone now guide future work from user pain points to actionable issues.
 - Focused undefined-backend diagnostic demo config and GIF source for README/Marketplace visual updates.
 - Stick-table directive metadata coverage now includes documentation links for `stick on`, `stick match`, `stick store-request`, and `stick store-response`, plus focused validator coverage for stick-table usage.
+
+### Changed
+- Backend and `server` snippets now use production-ready health checks: HTTP/1.1 `option httpchk` with `Host` header, `default-server` check timings, and no misleading `weight 1` default.
+
+### Security
+- Resolved a high-severity denial-of-service advisory in the `brace-expansion` build dependency ([GHSA-mh99-v99m-4gvg](https://github.com/advisories/GHSA-mh99-v99m-4gvg)) across both the root and client dependency trees. Build tooling only; no code shipped in the extension was affected.
+- The CI and publish security gates now audit the `client` and `server` manifests in addition to the root. `npm audit` only inspects the manifest it is pointed at, so a high-severity advisory previously reached `client/package-lock.json` without failing either gate.
+- Fixed the package contents guard, which was reporting success without inspecting anything. It called `vsce ls` without `--no-dependencies`, so it received no usable file list and passed on zero files — meaning credentials, keys, source maps or test files bundled into the extension would not have been caught. It now inspects the full package file list.
 
 ## [0.2.1] — 2026-07-02
 

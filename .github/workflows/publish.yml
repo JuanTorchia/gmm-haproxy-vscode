@@ -35,8 +35,16 @@ jobs:
       - name: Type-check
         run: npm run compile
 
-      - name: Security audit
+      # Mirrors ci.yml: npm audit only inspects the manifest it is pointed at,
+      # so all three have to be checked before publishing to the Marketplace.
+      - name: Security audit (root)
         run: npm audit --audit-level=high
+
+      - name: Security audit (client)
+        run: npm audit --audit-level=high --prefix client
+
+      - name: Security audit (server)
+        run: npm audit --audit-level=high --prefix server
 
       - name: Unit tests
         run: npm run test:unit

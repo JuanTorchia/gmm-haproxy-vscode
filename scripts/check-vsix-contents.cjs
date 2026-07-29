@@ -21,18 +21,23 @@ const forbiddenPatterns = [
   /\.tsbuildinfo$/i,
 ];
 
-// `vsce ls --tree` prints the same file list that maintainers inspect before
+// `vsce ls` prints the same file list that maintainers inspect before
 // publishing. Parsing this output keeps the guard aligned with the actual
 // package contents instead of guessing from git status.
+//
+// `--no-dependencies` is required, and must match how ci.yml and publish.yml
+// invoke `vsce package`. Without it vsce tries to resolve the dependency tree,
+// prints nothing usable to stdout, and the guard silently inspects zero files
+// and reports success — which is what it did until this was caught.
 function listPackageContents() {
   if (process.platform === 'win32') {
-    return execSync('npm exec -- vsce ls --tree', {
+    return execSync('npm exec -- vsce ls --no-dependencies', {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
     });
   }
 
-  return execFileSync('npm', ['exec', '--', 'vsce', 'ls', '--tree'], {
+  return execFileSync('npm', ['exec', '--', 'vsce', 'ls', '--no-dependencies'], {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
   });
