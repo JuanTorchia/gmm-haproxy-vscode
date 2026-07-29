@@ -20,6 +20,7 @@ const SECTION_SYMBOL_KIND: Record<SectionType, SymbolKind> = {
   program:      SymbolKind.Module,
   'http-errors':SymbolKind.Module,
   cache:        SymbolKind.Module,
+  acme:         SymbolKind.Module,
   unknown:      SymbolKind.Module,
 };
 

@@ -286,6 +286,7 @@ const PROGRAM: SpecialSectionDef[] = [
     signature: 'command <cmdline>',
     description: 'Set the command to execute for this program section.',
     since: '2.0',
+    removed: '3.3',
     docsUrl: `${DOCS}#3.10`,
   },
   {
@@ -294,6 +295,7 @@ const PROGRAM: SpecialSectionDef[] = [
     signature: 'option start-on-reload',
     description: 'Start (or restart) the program when HAProxy reloads its configuration.',
     since: '2.0',
+    removed: '3.3',
   },
   {
     name: 'user',
@@ -301,6 +303,7 @@ const PROGRAM: SpecialSectionDef[] = [
     signature: 'user <user>',
     description: 'Run the program as the given user.',
     since: '2.0',
+    removed: '3.3',
   },
   {
     name: 'group',
@@ -308,6 +311,7 @@ const PROGRAM: SpecialSectionDef[] = [
     signature: 'group <group>',
     description: 'Run the program under the given supplementary group.',
     since: '2.0',
+    removed: '3.3',
   },
 ];
 

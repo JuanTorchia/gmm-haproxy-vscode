@@ -31,7 +31,7 @@
     },
 
     "section-header": {
-      "match": "^(global|defaults|frontend|backend|listen|userlist|peers|resolvers|mailers|ring|log-forward|program|http-errors|cache)\\b(\\s+([\\w\\-\\.]+))?(\\s+(from)\\s+([\\w\\-\\.]+))?",
+      "match": "^(global|defaults|frontend|backend|listen|userlist|peers|resolvers|mailers|ring|log-forward|program|http-errors|cache|acme)\\b(\\s+([\\w\\-\\.]+))?(\\s+(from)\\s+([\\w\\-\\.]+))?",
       "captures": {
         "1": { "name": "entity.name.section.haproxy" },
         "3": { "name": "entity.name.type.haproxy" },

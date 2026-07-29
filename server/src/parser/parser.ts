@@ -12,7 +12,7 @@ import {
 const SECTION_KEYWORDS = new Set<string>([
   'global', 'defaults', 'frontend', 'backend', 'listen',
   'userlist', 'peers', 'resolvers', 'mailers', 'ring',
-  'log-forward', 'program', 'http-errors', 'cache',
+  'log-forward', 'program', 'http-errors', 'cache', 'acme',
 ]);
 
 /** Physical source segment that contributes tokens to one logical continued directive. */

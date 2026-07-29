@@ -43,6 +43,7 @@ export type SectionType =
   | 'program'
   | 'http-errors'
   | 'cache'
+  | 'acme'
   | 'unknown';
 
 /** A section block, e.g. `frontend http-in` with all its directives. */

@@ -427,6 +427,30 @@ export const SERVER_PARAMS: ServerParamDef[] = [
     since: '2.4',
   },
   {
+    name: 'sni-auto',
+    signature: '',
+    description: 'Explicitly enable automatic SNI from the Host header (default since 3.3).',
+    since: '3.3',
+  },
+  {
+    name: 'no-sni-auto',
+    signature: '',
+    description: 'Disable automatic SNI from the Host header.',
+    since: '3.3',
+  },
+  {
+    name: 'check-sni-auto',
+    signature: '',
+    description: 'Explicitly enable automatic SNI in health checks (default since 3.3).',
+    since: '3.3',
+  },
+  {
+    name: 'no-check-sni-auto',
+    signature: '',
+    description: 'Disable automatic SNI in health checks.',
+    since: '3.3',
+  },
+  {
     name: 'alpn',
     signature: '<protocols>',
     description: 'ALPN protocol list for TLS connections (e.g. h2,http/1.1).',

@@ -75,7 +75,7 @@ function createStatusBarItem(context: ExtensionContext): StatusBarItem {
 
 function updateStatusBar(item: StatusBarItem | undefined): void {
   if (!item) return;
-  const version = workspace.getConfiguration('haproxy').get<string>('version', '3.1');
+  const version = workspace.getConfiguration('haproxy').get<string>('version', '3.2');
   item.text = `$(server) HAProxy: ${version}`;
   item.show();
 }
@@ -97,11 +97,15 @@ function registerCommands(
 
   context.subscriptions.push(
     commands.registerCommand('haproxy.selectVersion', async () => {
-      const versions = ['2.4', '2.6', '2.8', '3.0', '3.1'];
-      const current = workspace.getConfiguration('haproxy').get<string>('version', '3.1');
+      const versions = ['2.4', '2.6', '2.8', '3.0', '3.1', '3.2', '3.3', '3.4'];
+      const current = workspace.getConfiguration('haproxy').get<string>('version', '3.2');
       const selected = await window.showQuickPick(
         versions.map((v) => ({
-          label: v === '3.1' ? `${v} (latest)` : v === '2.8' ? `${v} (LTS)` : v,
+          label:
+            v === '3.4' ? `${v} (latest LTS)` :
+            v === '3.2' ? `${v} (LTS)` :
+            v === '2.8' ? `${v} (LTS)` :
+            v === '3.1' || v === '2.4' ? `${v} (EOL)` : v,
           description: v === current ? '● active' : '',
           version: v,
         })),

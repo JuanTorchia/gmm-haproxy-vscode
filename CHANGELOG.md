@@ -8,6 +8,14 @@ See [docs/release.md](docs/release.md) for changelog and release-note rules.
 
 ## [Unreleased]
 
+### Added
+- HAProxy 3.2, 3.3 and 3.4 are now selectable validation targets, with directive metadata for the global, server and special-section keywords they introduce.
+- Selecting a HAProxy version that has reached end of life now reports a warning naming the EOL date and a supported upgrade target, so an unsupported validation target is visible while editing instead of at upgrade time.
+
+### Changed
+- The default validation version is now `3.2` (current recommended LTS), previously `3.1`.
+- Version status descriptions in the `haproxy.version` setting and the README support table now distinguish LTS, critical-fixes-only, and end-of-life releases instead of labelling every version as supported.
+
 ## [0.3.0] — 2026-07-29
 
 ### Added

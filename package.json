@@ -86,20 +86,26 @@
       "properties": {
         "haproxy.version": {
           "type": "string",
-          "default": "3.1",
+          "default": "3.2",
           "enum": [
             "2.4",
             "2.6",
             "2.8",
             "3.0",
-            "3.1"
+            "3.1",
+            "3.2",
+            "3.3",
+            "3.4"
           ],
           "enumDescriptions": [
-            "HAProxy 2.4 LTS",
-            "HAProxy 2.6 LTS",
-            "HAProxy 2.8 LTS (recommended LTS)",
-            "HAProxy 3.0",
-            "HAProxy 3.1 (latest stable)"
+            "HAProxy 2.4 (EOL)",
+            "HAProxy 2.6 LTS (critical fixes only)",
+            "HAProxy 2.8 LTS (critical fixes only)",
+            "HAProxy 3.0 LTS",
+            "HAProxy 3.1 (EOL)",
+            "HAProxy 3.2 LTS (recommended)",
+            "HAProxy 3.3",
+            "HAProxy 3.4 LTS (latest LTS)"
           ],
           "description": "HAProxy version to validate configuration against.",
           "markdownDescription": "HAProxy version to validate configuration against. Affects which directives are considered valid, deprecated, or unavailable."
