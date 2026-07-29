@@ -40,8 +40,18 @@ jobs:
       - name: Type-check
         run: npm run compile
 
-      - name: Security audit
+      # Each manifest has its own lockfile, and `npm audit` only ever looks at
+      # the one it is pointed at. Auditing the root alone left client/ and
+      # server/ unchecked, which is how a high-severity advisory reached
+      # client/package-lock.json without CI noticing.
+      - name: Security audit (root)
         run: npm audit --audit-level=high
+
+      - name: Security audit (client)
+        run: npm audit --audit-level=high --prefix client
+
+      - name: Security audit (server)
+        run: npm audit --audit-level=high --prefix server
 
       - name: Unit tests
         run: npm run test:unit
