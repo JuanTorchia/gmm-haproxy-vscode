@@ -21,8 +21,18 @@ export interface DirectiveDefinition {
 }
 
 /** Ordered list of known versions from oldest to newest. */
-const KNOWN_VERSIONS = ['2.4', '2.6', '2.8', '3.0', '3.1'] as const;
+const KNOWN_VERSIONS = ['2.4', '2.6', '2.8', '3.0', '3.1', '3.2', '3.3', '3.4'] as const;
 export type KnownVersion = (typeof KNOWN_VERSIONS)[number];
+
+/**
+ * Versions that reached end of life (no fixes at all).
+ * Versions in "critical fixes only" phase (2.6, 2.8) are intentionally excluded.
+ * Source: https://www.haproxy.org/ version table.
+ */
+export const VERSION_EOL: Record<string, string> = {
+  '2.4': '2026-Q2',
+  '3.1': '2026-01',
+};
 
 /**
  * Registry that resolves directive definitions against a specific HAProxy version.

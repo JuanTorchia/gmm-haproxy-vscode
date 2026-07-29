@@ -6,7 +6,7 @@ export interface ServerSettings {
 }
 
 export const DEFAULT_SETTINGS: ServerSettings = {
-  version: '3.1',
+  version: '3.2',
   validationEnabled: true,
   completionEnabled: true,
 };

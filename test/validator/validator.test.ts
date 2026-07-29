@@ -8,7 +8,7 @@ import path from 'path';
 const parser = new HaproxyParser();
 const registry = new VersionRegistry();
 
-function validate(text: string, version = '3.1'): Diagnostic[] {
+function validate(text: string, version = '3.2'): Diagnostic[] {
   const doc = parser.parse(text, 'test://validate');
   const validator = new ValidationProvider(registry, version);
   return validator.validate(doc) as Diagnostic[];
@@ -216,15 +216,50 @@ describe('ValidationProvider', () => {
 
   describe('version fallback', () => {
     it('falls back to nearest lower version for unknown version string', () => {
-      // 3.5 is unknown — should resolve to 3.1 (nearest lower)
+      // 3.5 is unknown — should resolve to 3.4 (nearest lower)
       const diags = validate('frontend main\n    use_backend web\nbackend web\n    balance roundrobin\n', '3.5');
       expect(diags).toHaveLength(0);
     });
 
     it('falls back to oldest known version when version is older than all known', () => {
       // 1.0 is older than 2.4 (our oldest known) — should resolve to 2.4
+      // 2.4 is EOL, so an end-of-life warning is expected, but no errors
       const diags = validate('frontend main\n    use_backend web\nbackend web\n    balance roundrobin\n', '1.0');
-      expect(diags).toHaveLength(0);
+      expect(diags.filter((d) => d.severity === DiagnosticSeverity.Error)).toHaveLength(0);
+    });
+  });
+
+  describe('end-of-life version warning', () => {
+    const config = 'frontend main\n    use_backend web\nbackend web\n    balance roundrobin\n';
+    const eolDiags = (version: string): Diagnostic[] =>
+      validate(config, version).filter((d) => d.message.includes('end of life'));
+
+    for (const version of ['2.4', '3.1']) {
+      it(`warns once when validating against EOL version ${version}`, () => {
+        const diags = eolDiags(version);
+        expect(diags).toHaveLength(1);
+        expect(diags[0]?.severity).toBe(DiagnosticSeverity.Warning);
+      });
+    }
+
+    for (const version of ['2.6', '2.8', '3.0', '3.2', '3.3', '3.4']) {
+      it(`does not warn for supported version ${version}`, () => {
+        expect(eolDiags(version)).toHaveLength(0);
+      });
+    }
+
+    it('anchors the warning at the top of the document, not to a directive', () => {
+      const range = eolDiags('2.4')[0]?.range;
+      expect(range?.start).toEqual({ line: 0, character: 0 });
+    });
+
+    it('names a supported upgrade target in the message', () => {
+      expect(eolDiags('2.4')[0]?.message).toMatch(/3\.2 LTS|3\.4 LTS/);
+    });
+
+    it('warns for an unknown version that falls back to an EOL version', () => {
+      // 1.0 resolves down to 2.4, which is EOL
+      expect(eolDiags('1.0')).toHaveLength(1);
     });
   });
 
@@ -549,7 +584,9 @@ describe('ValidationProvider', () => {
     const v = '2.4';
 
     it('accepts balance roundrobin (valid since 1.0)', () => {
-      expect(validate('frontend main\n    use_backend web\nbackend web\n    balance roundrobin\n', v)).toHaveLength(0);
+      // 2.4 is EOL, so an end-of-life warning is expected, but no errors
+      const diags = validate('frontend main\n    use_backend web\nbackend web\n    balance roundrobin\n', v);
+      expect(diags.filter((d) => d.severity === DiagnosticSeverity.Error)).toHaveLength(0);
     });
 
     it('errors on reqrep (removed in 2.4)', () => {
@@ -655,7 +692,7 @@ describe('ValidationProvider', () => {
     });
   });
 
-  describe('per-version validation — HAProxy 3.1 (default)', () => {
+  describe('per-version validation — HAProxy 3.2 (default)', () => {
     it('accepts balance roundrobin', () => {
       expect(validate('frontend main\n    use_backend web\nbackend web\n    balance roundrobin\n')).toHaveLength(0);
     });
@@ -693,7 +730,7 @@ describe('ValidationProvider', () => {
         expect(validate(config, '2.8')).toHaveLength(0);
       });
 
-      it('is valid in 3.1 (default)', () => {
+      it('is valid in 3.2 (default)', () => {
         expect(validate(config)).toHaveLength(0);
       });
 
@@ -720,7 +757,7 @@ describe('ValidationProvider', () => {
         expect(validate(config, '3.0')).toHaveLength(0);
       });
 
-      it('is valid in 3.1 (default)', () => {
+      it('is valid in 3.2 (default)', () => {
         expect(validate(config)).toHaveLength(0);
       });
 

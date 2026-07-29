@@ -1,6 +1,6 @@
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver/node';
 import { HaproxyDocument, HaproxySection, HaproxyDirective, SourceRange } from '../parser/ast';
-import { VersionRegistry } from '../registry/versionRegistry';
+import { VersionRegistry, VERSION_EOL } from '../registry/versionRegistry';
 import { ACTIONS, ActionRulesets } from '../data/actions';
 import { validateCrossReferences, validateUnreferencedSymbols } from './validatorCrossRef';
 
@@ -31,6 +31,17 @@ export class ValidationProvider {
 
   validate(doc: HaproxyDocument): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
+
+    // Warn once per document when validating against an end-of-life HAProxy version
+    const eolDate = VERSION_EOL[this.registry.resolveVersion(this.version)];
+    if (eolDate) {
+      diagnostics.push({
+        severity: DiagnosticSeverity.Warning,
+        range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } },
+        message: `HAProxy ${this.registry.resolveVersion(this.version)} reached end of life (${eolDate}). Consider upgrading to 3.2 LTS or 3.4 LTS.`,
+        source: 'haproxy',
+      });
+    }
 
     // Surface parse errors first
     for (const err of doc.parseErrors) {

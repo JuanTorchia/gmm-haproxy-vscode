@@ -15,7 +15,7 @@
 ## Why DevOps and SRE teams use it
 
 - **Catch mistakes before reloads** — unknown directives, wrong sections, undefined backends, deprecated options, and version mismatches show up while editing.
-- **Edit against the HAProxy version you run** — validate configs for HAProxy 2.4, 2.6, 2.8, 3.0, or 3.1 per workspace.
+- **Edit against the HAProxy version you run** — validate configs for HAProxy 2.4 through 3.4 per workspace.
 - **Keep context in VS Code** — completions, hover docs, snippets, formatting, folding, symbol navigation, and quick fixes reduce trips to the manual.
 
 If this extension helps you avoid HAProxy config mistakes, consider starring the repo so other operators can find it.
@@ -116,13 +116,18 @@ Validate your config against the exact HAProxy version running in production. Sw
 
 | Version | Type | Status |
 |---|---|---|
-| **3.1** | Stable | ✅ Latest — default |
-| **3.0** | Stable | ✅ Supported |
-| **2.8** | LTS | ✅ Recommended LTS |
-| **2.6** | LTS | ✅ Supported |
-| **2.4** | LTS | ✅ Supported (EOL 2026) |
+| **3.4** | LTS | ✅ Latest LTS |
+| **3.3** | Stable | ✅ Supported |
+| **3.2** | LTS | ✅ Recommended — default |
+| **3.1** | Stable | ⚠️ End of life |
+| **3.0** | LTS | ✅ Supported |
+| **2.8** | LTS | ✅ Critical fixes only |
+| **2.6** | LTS | ✅ Critical fixes only |
+| **2.4** | LTS | ⚠️ End of life |
 
 The status bar shows your active version at all times. Click it to switch instantly.
+
+Selecting a version that has reached end of life adds a warning diagnostic to the file, so an unsupported target is visible while editing rather than at upgrade time.
 
 ---
 
@@ -150,7 +155,7 @@ All settings are available under `File → Preferences → Settings → HAProxy`
 
 | Setting | Default | Description |
 |---|---|---|
-| `haproxy.version` | `3.1` | HAProxy version to validate against |
+| `haproxy.version` | `3.2` | HAProxy version to validate against |
 | `haproxy.validate.enable` | `true` | Enable/disable live validation |
 | `haproxy.completion.enable` | `true` | Enable/disable autocompletion |
 | `haproxy.trace.server` | `off` | LSP trace level (`off` / `messages` / `verbose`) |

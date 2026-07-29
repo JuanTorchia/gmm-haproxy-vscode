@@ -42,6 +42,15 @@ export const DIRECTIVES: DirectiveDef[] = [
     category: 'load-balancing',
     docsUrl: `${DOCS}#balance`,
   },
+  {
+    name: 'dispatch',
+    signature: 'dispatch <address>[:port]',
+    description: 'Send all traffic to a single server address (legacy, use server lines instead).',
+    sections: LB,
+    since: '1.0',
+    deprecated: '3.3',
+    category: 'load-balancing',
+  },
 
   // ─── BIND ─────────────────────────────────────────────────────────────────
   {
@@ -882,6 +891,7 @@ export const DIRECTIVES: DirectiveDef[] = [
     description: 'Use the client source address when connecting to the server.',
     sections: DLB,
     since: '1.1',
+    deprecated: '3.3',
     invertible: true,
     category: 'option',
   },

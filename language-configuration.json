@@ -22,8 +22,8 @@
     ["'", "'"]
   ],
   "indentationRules": {
-    "increaseIndentPattern": "^(global|defaults|frontend|backend|listen|userlist|peers|resolvers|mailers|ring|log-forward|program|http-errors|cache)\\b.*",
-    "decreaseIndentPattern": "^(global|defaults|frontend|backend|listen|userlist|peers|resolvers|mailers|ring|log-forward|program|http-errors|cache)\\b.*"
+    "increaseIndentPattern": "^(global|defaults|frontend|backend|listen|userlist|peers|resolvers|mailers|ring|log-forward|program|http-errors|cache|acme)\\b.*",
+    "decreaseIndentPattern": "^(global|defaults|frontend|backend|listen|userlist|peers|resolvers|mailers|ring|log-forward|program|http-errors|cache|acme)\\b.*"
   },
   "wordPattern": "[a-zA-Z0-9_\\-]+"
 }
