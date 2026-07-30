@@ -97,6 +97,12 @@ export const TextEdit = {
   }),
 };
 
+export enum DocumentHighlightKind {
+  Text = 1,
+  Read = 2,
+  Write = 3,
+};
+
 export const FoldingRangeKind = {
   Comment: 'comment',
   Imports: 'imports',
