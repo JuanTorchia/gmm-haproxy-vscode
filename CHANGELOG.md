@@ -9,6 +9,7 @@ See [docs/release.md](docs/release.md) for changelog and release-note rules.
 ## [Unreleased]
 
 ### Added
+- Port numbers in `bind` and `server` addresses are now validated against the 1-65535 range. Port ranges (`bind :8080-8090`) and comma-separated address lists are each checked per address. Unix socket paths, `fd@`/`unix@`-style addresses, environment substitutions and bracket-less IPv6 literals are skipped rather than guessed at, and `server ... :0` is accepted because 0 means "inherit the incoming port" on a server line.
 - Timeout values are now validated. A value written without a unit — `timeout connect 5`, which HAProxy reads as 5 milliseconds — is reported as a warning naming the real duration and the likely intent. A value HAProxy cannot parse at all, including a unit separated from its number by a space, is reported as an error. Covers the whole timeout family plus `stats timeout`, the `tune.*-timeout` settings and `tcp-request`/`tcp-response inspect-delay`.
 - HAProxy 3.2, 3.3 and 3.4 are now selectable validation targets, with directive metadata for the global, server and special-section keywords they introduce.
 - Selecting a HAProxy version that has reached end of life now reports a warning naming the EOL date and a supported upgrade target, so an unsupported validation target is visible while editing instead of at upgrade time.

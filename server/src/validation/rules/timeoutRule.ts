@@ -1,5 +1,6 @@
-import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver/node';
+import { Diagnostic } from 'vscode-languageserver/node';
 import { HaproxyDirective, SourceRange } from '../../parser/ast';
+import { RuleContext, ruleError, ruleWarning } from './shared';
 
 /**
  * Time units accepted by HAProxy in a time value, ordered longest-first so the
@@ -23,12 +24,6 @@ const TIME_VALUE = /^(\d{1,15})(us|ms|s|m|h|d)?$/;
  * `-timeout` suffix test below.
  */
 const NOT_A_TIME_DIRECTIVE = new Set(['set-timeout']);
-
-/** Context a validation rule needs beyond the directive itself. */
-export interface RuleContext {
-  /** Directive name as resolved by the registry, e.g. `timeout connect`. */
-  readonly resolvedName: string;
-}
 
 /**
  * Reports whether a resolved directive name takes a time value as its first argument.
@@ -91,14 +86,11 @@ export function timeoutValueRule(directive: HaproxyDirective, context: RuleConte
   const next = directive.args[valueIndex + 1]?.value;
   if (next && (TIME_UNITS as readonly string[]).includes(next)) {
     return [
-      {
-        severity: DiagnosticSeverity.Error,
-        range: toRange(arg.range),
-        message:
-          `'${context.resolvedName} ${raw} ${next}' has a space between the value and its unit. ` +
-          `Write '${raw}${next}' as a single token.`,
-        source: 'haproxy',
-      },
+      ruleError(
+        arg.range,
+        `'${context.resolvedName} ${raw} ${next}' has a space between the value and its unit. ` +
+          `Write '${raw}${next}' as a single token.`
+      ),
     ];
   }
 
@@ -107,32 +99,20 @@ export function timeoutValueRule(directive: HaproxyDirective, context: RuleConte
   if (Number(digits) === 0) return [];
 
   return [
-    {
-      severity: DiagnosticSeverity.Warning,
-      range: toRange(arg.range),
-      message:
-        `'${context.resolvedName} ${raw}' is ${raw} milliseconds. ` +
+    ruleWarning(
+      arg.range,
+      `'${context.resolvedName} ${raw}' is ${raw} milliseconds. ` +
         `HAProxy reads a time value with no unit as milliseconds. ` +
-        `Write '${raw}s' for ${raw} seconds, or add an explicit unit (us, ms, s, m, h, d).`,
-      source: 'haproxy',
-    },
+        `Write '${raw}s' for ${raw} seconds, or add an explicit unit (us, ms, s, m, h, d).`
+    ),
   ];
 }
 
 function invalidFormat(range: SourceRange, name: string, raw: string): Diagnostic {
-  return {
-    severity: DiagnosticSeverity.Error,
-    range: toRange(range),
-    message:
+  return ruleError(
+    range,
       `'${raw}' is not a valid time value for '${name}'. ` +
       `Use a number followed by a unit: ${TIME_UNITS.join(', ')} — for example '5s'.`,
-    source: 'haproxy',
-  };
+  );
 }
 
-function toRange(r: SourceRange): Range {
-  return {
-    start: { line: r.startLine, character: r.startCharacter },
-    end: { line: r.endLine, character: r.endCharacter },
-  };
-}
