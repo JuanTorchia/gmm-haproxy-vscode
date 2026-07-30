@@ -4,6 +4,7 @@ import { VersionRegistry, VERSION_EOL } from '../registry/versionRegistry';
 import { ACTIONS, ActionRulesets } from '../data/actions';
 import { validateCrossReferences, validateUnreferencedSymbols } from './validatorCrossRef';
 import { timeoutValueRule } from './rules/timeoutRule';
+import { portRangeRule } from './rules/portRule';
 
 const MAX_DIAGNOSTICS = 100;
 
@@ -162,7 +163,9 @@ export class ValidationProvider {
     this.validateAction(directive, def.name, out);
 
     // Per-directive value rules
-    out.push(...timeoutValueRule(directive, { resolvedName: def.name }));
+    const ruleContext = { resolvedName: def.name };
+    out.push(...timeoutValueRule(directive, ruleContext));
+    out.push(...portRangeRule(directive, ruleContext));
   }
 
   private validateAction(directive: HaproxyDirective, resolvedName: string, out: Diagnostic[]): void {
