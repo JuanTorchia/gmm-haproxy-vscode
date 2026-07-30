@@ -36,7 +36,7 @@ parser → AST
     ↓
 providers (completion, hover, validation, formatting)
     ↓
-data/haproxy-{version}.json
+registry/versionRegistry.ts → data/*.ts
 ```
 Dependencies must flow downward only. No circular imports. No provider importing from another provider.
 
@@ -48,10 +48,21 @@ Dependencies must flow downward only. No circular imports. No provider importing
 - Cache AST per document URI. Invalidate on `textDocument/didChange`.
 
 ### Version Strategy
-- Directive definitions are stored per-version as flat JSON files: `data/2.4.json`, `data/2.6.json`, etc.
-- A `VersionRegistry` class merges base version data with incremental changes.
+- Directive definitions live in **one** table per directive family, as typed TS modules under `server/src/data/`
+  (`directives.ts`, `global.ts`, `acl.ts`, `actions.ts`, `server-params.ts`, `special-sections.ts`).
+- Each definition carries its own version range — `sinceVersion`, `deprecatedSinceVersion`, `removedInVersion`.
+  A directive is written down once and the version gates travel with it.
+- `VersionRegistry` (`registry/versionRegistry.ts`) resolves a requested version against those fields and caches
+  the resulting name→definition map per version.
 - Fallback rule: if version X is requested and not found, use the nearest lower known version.
-- Deprecation is tracked in the data files, not in code.
+- Deprecation and removal are tracked in the data modules, not in provider or validator code.
+- `KNOWN_VERSIONS` and `VERSION_EOL` in `versionRegistry.ts` are the single source of truth for which versions
+  exist and which have reached end of life.
+
+> **Why not per-version JSON files.** Storing a full directive table per version (`data/2.4.json`, `data/2.6.json`, …)
+> duplicates every directive across eight files, so a single version gate can silently disagree between them.
+> Keeping the range on the directive makes that class of bug unrepresentable. Adding a version means extending
+> `KNOWN_VERSIONS` and setting `sinceVersion` on whatever is new — not copying a table.
 
 ### Project Structure
 ```
@@ -63,56 +74,90 @@ gmm-haproxy-vscode/
 │   └── tsconfig.json
 ├── server/
 │   ├── src/
-│   │   ├── server.ts
+│   │   ├── server.ts              # LSP wiring only: handlers, AST cache, debounce
+│   │   ├── settings.ts            # ServerSettings + parseServerSettings
+│   │   ├── documentSizePolicy.ts  # oversized-document gating (see PART V, Rule 8)
 │   │   ├── parser/
-│   │   │   ├── lexer.ts
-│   │   │   ├── parser.ts
-│   │   │   └── ast.ts
+│   │   │   ├── parser.ts          # tokenizer + AST construction
+│   │   │   └── ast.ts             # readonly node types
 │   │   ├── validation/
-│   │   │   ├── validator.ts
-│   │   │   └── rules/
+│   │   │   ├── validator.ts       # composes rules, owns directive resolution
+│   │   │   ├── validatorCrossRef.ts
+│   │   │   └── rules/             # one file per value rule (Strategy pattern)
+│   │   │       ├── portRule.ts
+│   │   │       ├── timeoutRule.ts
+│   │   │       └── shared.ts      # RuleContext, ruleError, ruleWarning
 │   │   ├── completion/
-│   │   │   └── completionProvider.ts
+│   │   │   ├── completionProvider.ts
+│   │   │   ├── completionContext.ts
+│   │   │   └── completionItems.ts
 │   │   ├── hover/
 │   │   │   └── hoverProvider.ts
 │   │   ├── formatting/
 │   │   │   └── formatter.ts
+│   │   ├── symbols/
+│   │   │   └── symbolsProvider.ts
+│   │   ├── definition/
+│   │   │   └── definitionProvider.ts
+│   │   ├── references/
+│   │   │   └── referencesProvider.ts
+│   │   ├── rename/
+│   │   │   └── renameProvider.ts
+│   │   ├── highlights/
+│   │   │   └── documentHighlightProvider.ts
+│   │   ├── folding/
+│   │   │   └── foldingProvider.ts
+│   │   ├── codeactions/
+│   │   │   └── codeActionsProvider.ts
+│   │   ├── shared/
+│   │   │   └── symbolResolver.ts  # shared by definition/references/rename/highlights
 │   │   ├── registry/
-│   │   │   └── versionRegistry.ts
-│   │   └── data/
-│   │       ├── 2.4.json
-│   │       ├── 2.6.json
-│   │       ├── 2.8.json
-│   │       ├── 3.0.json
-│   │       └── 3.1.json
+│   │   │   └── versionRegistry.ts # KNOWN_VERSIONS, VERSION_EOL, resolution
+│   │   └── data/                  # directive tables — data only, no logic
+│   │       ├── types.ts
+│   │       ├── directives.ts
+│   │       ├── global.ts
+│   │       ├── acl.ts
+│   │       ├── actions.ts
+│   │       ├── server-params.ts
+│   │       └── special-sections.ts
 │   ├── package.json
 │   └── tsconfig.json
 ├── syntaxes/
 │   └── haproxy.tmLanguage.json
 ├── snippets/
 │   └── haproxy.json
-├── schemas/
-│   └── haproxy-versions.json
+├── scripts/
+│   ├── check-vsix-contents.cjs    # pre-publish package guard
+│   └── generate-demo-gifs.cjs
+├── docs/                          # contributor docs, demo configs, README assets
 ├── .github/
-│   └── workflows/
-│       ├── ci.yml
-│       └── publish.yml
+│   ├── workflows/                 # ci.yml, publish.yml, codeql.yml, dependency-review.yml
+│   ├── ISSUE_TEMPLATE/
+│   └── dependabot.yml
 ├── test/
-│   ├── fixtures/          # real HAProxy config files
-│   ├── parser/
-│   ├── validator/
-│   └── integration/
+│   ├── fixtures/                  # real HAProxy config files
+│   ├── __mocks__/                 # vscode-languageserver stubs for unit tests
+│   ├── integration/               # @vscode/test-electron
+│   └── <one directory per provider, mirroring server/src>
 ├── .vscodeignore
-├── .eslintrc.json
+├── eslint.config.js               # flat config — the only lint config
 ├── package.json
 ├── tsconfig.json
 └── CLAUDE.md
 ```
 
+`shared/symbolResolver.ts` exists because four providers (definition, references, rename, highlights) all need to
+resolve the symbol under a cursor. That is a shared *helper*, not a provider importing another provider — the
+no-cross-provider-dependency rule still holds.
+
 ### Design Patterns to Use
 - **Registry pattern** for directive version data — single source of truth, queried by version.
 - **Provider pattern** for language features — each feature is an isolated class implementing an interface.
-- **Strategy pattern** for validation rules — each rule is a function `(directive, context) => Diagnostic[]`.
+- **Strategy pattern** for validation rules — each rule is a function `(directive, context) => Diagnostic[]`,
+  one file per rule under `validation/rules/`, composed by `validator.ts`. Build diagnostics with `ruleError` /
+  `ruleWarning` from `rules/shared.ts` so severity stays consistent. New value rules go here, not inline in
+  `validator.ts`.
 - **Observer pattern** via LSP events — server reacts to document open/change/close events.
 - **Immutable value objects** for AST nodes — never mutate after creation.
 
@@ -140,6 +185,9 @@ gmm-haproxy-vscode/
 - ESLint with `@typescript-eslint` — enforce on every save (CI blocks merge on lint errors).
 - No `console.log` in production code. Use `connection.console.log()` server-side.
 - Max file length: 300 lines. If a file grows beyond that, split by responsibility.
+  - Applies to **code**. `server/src/data/` is exempt: those are directive tables, and splitting them by line
+    count would scatter one directive family across files and make a definition harder to find, not easier.
+    Split data modules by HAProxy domain (`global`, `acl`, `actions`, …), which is what they already do.
 - Max function length: 40 lines. Long functions are a refactor signal.
 - No magic strings. Directive names, section names, setting keys → constants or enums.
 - All exported symbols must have JSDoc with `@param` and `@returns`.
@@ -149,7 +197,8 @@ gmm-haproxy-vscode/
 - Unit tests for: parser, validator, completion provider, hover provider, formatter — all independent of VSCode.
 - Integration tests using `@vscode/test-electron` for extension activation and LSP handshake.
 - Test fixtures: minimum 5 real HAProxy configs (simple, complex, multi-backend, SSL termination, TCP proxy).
-- Each HAProxy version (2.4, 2.6, 2.8, 3.0, 3.1) must have dedicated validation tests.
+- Every version in `KNOWN_VERSIONS` (2.4, 2.6, 2.8, 3.0, 3.1, 3.2, 3.3, 3.4) must have dedicated validation tests.
+  Adding a version to `KNOWN_VERSIONS` without tests for its gates is not a supported version.
 - Snapshot tests for the TextMate grammar — catch tokenization regressions.
 - Coverage target: 80% on parser and validator modules.
 - Tests run on every PR via GitHub Actions. Merge blocked if tests fail.
@@ -210,7 +259,7 @@ gmm-haproxy-vscode/
 - Autocompletion (section-aware)
 - Inline validation with error/warning diagnostics
 - Hover documentation
-- Multi-version support (2.4 → 3.1)
+- Multi-version support (2.4 → 3.4)
 
 **Should have (v1.x):**
 - Snippets for common patterns
@@ -342,7 +391,7 @@ One-line description of what this does.
 - Include a clickable docs link on every hover.
 
 ### Rule 5: Status Bar Integration
-- Show the active HAProxy version in the status bar when a `.cfg` file is open: `HAProxy: 3.1`
+- Show the active HAProxy version in the status bar when a `.cfg` file is open: `HAProxy: 3.2`
 - Clicking it opens a QuickPick to change the version for the current workspace.
 - Status bar item priority: right side, low priority (don't crowd the left side).
 
@@ -355,7 +404,7 @@ One-line description of what this does.
 All settings exposed in `contributes.configuration`:
 | Setting | Type | Default | Description |
 |---|---|---|---|
-| `haproxy.version` | enum | `"3.1"` | HAProxy version to validate against |
+| `haproxy.version` | enum | `"3.2"` | HAProxy version to validate against |
 | `haproxy.validate.enable` | boolean | `true` | Enable/disable live validation |
 | `haproxy.completion.enable` | boolean | `true` | Enable/disable autocompletion |
 | `haproxy.trace.server` | enum | `"off"` | LSP trace level for debugging |
@@ -508,48 +557,80 @@ All snippets use tabstops `${1:placeholder}` for every variable field.
 | `cache` | HTTP response cache configuration |
 
 ## Validation Rules (key)
-- Unknown directive in any section → Error.
-- Directive used in wrong section (e.g., `use_backend` in `backend`) → Error.
-- Missing required argument → Error.
-- Directive deprecated in selected version → Warning with migration hint.
-- Directive not yet available in selected version → Error with "available since X" message.
-- Invalid timeout format (not `<n>ms|s|m|h|d`) → Error.
-- Port out of range (< 1 or > 65535) → Error.
-- `use_backend` references a name not defined in any `backend` or `listen` block → Warning.
-- `mode tcp` + HTTP-only directive in same section → Error.
-- `mode http` + TCP-only directive in same section → Error.
+Severities below are what the validator actually emits. Keep this list and the code in sync in both directions —
+if a rule ships with a different severity than documented here, one of the two is wrong.
+
+| Rule | Severity | Implemented in |
+|---|---|---|
+| Unknown directive in any section | Error | `validator.ts` |
+| Directive used in wrong section (e.g. `use_backend` in `backend`) | Error | `validator.ts` |
+| Directive not yet available in selected version | Error — "may be available since X" | `validator.ts` |
+| Directive deprecated in selected version | Warning + migration hint | `validator.ts` |
+| Unknown action sub-keyword (e.g. `http-request <action>`) | Error | `validator.ts` |
+| `mode tcp` + HTTP-only directive in same section | Error | `validator.ts` |
+| `mode http` + TCP-only directive in same section | Error | `validator.ts` |
+| Timeout value HAProxy cannot parse | Error | `rules/timeoutRule.ts` |
+| Timeout value written without a unit (`timeout connect 5` = 5 ms) | **Warning** | `rules/timeoutRule.ts` |
+| Port out of range (< 1 or > 65535) | Error | `rules/portRule.ts` |
+| `use_backend` / `default_backend` references an undefined name | Warning | `validatorCrossRef.ts` |
+| Selected HAProxy version has reached end of life | Warning | `validator.ts` |
+
+A unit-less timeout is a **warning, not an error**, on purpose: `timeout connect 5` is valid HAProxy that loads
+fine, it just means 5 milliseconds rather than the 5 seconds the author almost certainly intended. Erroring on
+config that HAProxy accepts would break Rule 3 in PART V — severity has to track "will this load?", and the
+message carries the real intent.
+
+### Not yet implemented
+- **Missing required argument → Error.** There is no argument-count validation anywhere in the validator today.
+  This remains a requirement, not a description: `DirectiveDefinition` has no arity field to check against, so
+  implementing it means extending the data model first.
 
 ## HAProxy Versions to Support
+Source of truth: `KNOWN_VERSIONS` and `VERSION_EOL` in `server/src/registry/versionRegistry.ts`.
+
 | Version | Type | Notes |
 |---|---|---|
-| 2.4 | LTS | End of life 2026, still widely deployed |
-| 2.6 | LTS | Common in enterprise |
-| 2.8 | LTS | Recommended current LTS |
-| 3.0 | Stable | First 3.x release |
-| 3.1 | Stable | Latest stable, **default** |
+| 2.4 | LTS | End of life 2026-Q2 — still widely deployed, so kept selectable |
+| 2.6 | LTS | Critical fixes only |
+| 2.8 | LTS | Critical fixes only |
+| 3.0 | LTS | Supported |
+| 3.1 | Stable | End of life 2026-01 |
+| 3.2 | LTS | Recommended, **default** |
+| 3.3 | Stable | Supported |
+| 3.4 | LTS | Latest LTS |
+
+Selecting an end-of-life version is allowed and produces a warning diagnostic naming the EOL date and a supported
+upgrade target — operators do run EOL builds, and silently refusing to validate would be worse than flagging it.
+
+**Adding a version touches five places.** All five must move together:
+1. `KNOWN_VERSIONS` in `versionRegistry.ts` (and `VERSION_EOL` when a version ages out)
+2. `sinceVersion` / `deprecatedSinceVersion` / `removedInVersion` on whatever the release changed, in `data/`
+3. `haproxy.version` `enum` + `enumDescriptions` in `package.json`
+4. The `description` field in `package.json` and the README support table
+5. Validation tests for the new version's gates
 
 ---
 
-# PART IX — DEPENDENCY VERSIONS
+# PART IX — TOOLCHAIN CONSTRAINTS
 
-| Package | Version |
-|---|---|
-| Node.js | 24.x LTS |
-| TypeScript | 6.0 |
-| @types/node | ^22.17.2 |
-| vscode-languageclient | 9.0.1 |
-| vscode-languageserver | 9.0.1 |
-| vscode-languageserver-textdocument | 1.0.12 |
-| vscode-languageserver-types | 3.17.5 |
-| @vscode/test-electron | 2.5.2 |
-| @vscode/vsce | 3.7.1 |
-| eslint | 10.2.0 |
-| @typescript-eslint/eslint-plugin | 8.58.0 |
-| @typescript-eslint/parser | 8.58.0 |
-| esbuild | 0.28.0 |
-| VSCode engine minimum | ^1.110.0 |
+These are product decisions, not dependency bookkeeping. Changing one of them changes who can install or build
+the extension, so each needs an explicit reason:
 
-Update versions only when explicitly asked. Document the reason for each version bump in the commit message.
+| Constraint | Value | Why it is a decision |
+|---|---|---|
+| Node.js | 24.x LTS | CI matrix and the runtime the bundled server is built against |
+| VSCode engine minimum | `^1.110.0` | Sets the floor for who can install from the Marketplace |
+| TypeScript | 6.x | Major only — Dependabot is configured to ignore TypeScript majors |
+| Bundler | `esbuild` | One bundle per process, no webpack (see PART II, Build & Bundling) |
+| Test runners | `jest` (unit) + `@vscode/test-electron` (integration) | Unit tests must run without VSCode |
+
+**Exact dependency versions live in `package.json`** — pinned there per PART IV, locked by `package-lock.json`,
+and updated by Dependabot. Do not duplicate them here: a table of exact versions goes stale on every accepted
+dependency bump, and a charter that contradicts `package.json` is worse than no table at all.
+
+To answer "what version of X do we use?", read `package.json`. To answer "may I bump X?", read this section and
+the Dependabot review policy in `CONTRIBUTING.md`. Document the reason for a constraint change — not a routine
+dependency bump — in the commit message.
 
 ---
 
