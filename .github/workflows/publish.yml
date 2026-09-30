@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      id-token: write
 
     steps:
       - uses: actions/checkout@v7
@@ -63,7 +62,12 @@ jobs:
         run: npm run package:check
 
       - name: Publish to Marketplace
-        run: npx @vscode/vsce publish --no-dependencies --oidc
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        # The Marketplace API currently reports that Trusted Publishing is not
+        # supported for this publisher. Keep the PAT scoped to Actions until
+        # Microsoft enables OIDC for gmm.
+        run: npx @vscode/vsce publish --no-dependencies
 
       - name: Extract version from tag
         id: version
