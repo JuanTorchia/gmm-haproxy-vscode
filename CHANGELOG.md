@@ -8,6 +8,8 @@ See [docs/release.md](docs/release.md) for changelog and release-note rules.
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-09-30
+
 ### Added
 - Port numbers in `bind` and `server` addresses are now validated against the 1-65535 range. Port ranges (`bind :8080-8090`) and comma-separated address lists are each checked per address. Unix socket paths, `fd@`/`unix@`-style addresses, environment substitutions and bracket-less IPv6 literals are skipped rather than guessed at, and `server ... :0` is accepted because 0 means "inherit the incoming port" on a server line.
 - Timeout values are now validated. A value written without a unit — `timeout connect 5`, which HAProxy reads as 5 milliseconds — is reported as a warning naming the real duration and the likely intent. A value HAProxy cannot parse at all, including a unit separated from its number by a space, is reported as an error. Covers the whole timeout family plus `stats timeout`, the `tune.*-timeout` settings and `tcp-request`/`tcp-response inspect-delay`.
@@ -17,6 +19,7 @@ See [docs/release.md](docs/release.md) for changelog and release-note rules.
 ### Changed
 - The default validation version is now `3.2` (current recommended LTS), previously `3.1`.
 - Version status descriptions in the `haproxy.version` setting and the README support table now distinguish LTS, critical-fixes-only, and end-of-life releases instead of labelling every version as supported.
+- Marketplace metadata and README now advertise the shipped HAProxy 3.4 support, safe rename, references, highlights, Outline navigation, and quick fixes, with GMM Hub as the product homepage.
 
 ### Security
 - Updated the bundled client dependency tree to `brace-expansion` 5.0.12, resolving the high-severity denial-of-service advisories affecting versions through 5.0.11. The same safe override is enforced in the root tooling tree.
