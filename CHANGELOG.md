@@ -18,6 +18,9 @@ See [docs/release.md](docs/release.md) for changelog and release-note rules.
 - The default validation version is now `3.2` (current recommended LTS), previously `3.1`.
 - Version status descriptions in the `haproxy.version` setting and the README support table now distinguish LTS, critical-fixes-only, and end-of-life releases instead of labelling every version as supported.
 
+### Security
+- Updated the bundled client dependency tree to `brace-expansion` 5.0.12, resolving the high-severity denial-of-service advisories affecting versions through 5.0.11. The same safe override is enforced in the root tooling tree.
+
 ## [0.3.0] — 2026-07-29
 
 ### Added
