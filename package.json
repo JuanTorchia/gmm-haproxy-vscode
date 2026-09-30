@@ -1,8 +1,8 @@
 {
   "name": "gmm-haproxy-vscode",
   "displayName": "HAProxy Config",
-  "description": "Full language support for HAProxy configuration files — syntax highlighting, autocompletion, validation, hover docs, snippets, and formatting. Multi-version support from 2.4 LTS to 3.1.",
-  "version": "0.3.0",
+  "description": "Version-aware HAProxy 2.4–3.4 support with validation, completion, navigation, safe rename, hover docs, quick fixes, snippets, and formatting.",
+  "version": "0.4.0",
   "publisher": "gmm",
   "author": {
     "name": "Juan Torchia",
@@ -22,6 +22,7 @@
   "bugs": {
     "url": "https://github.com/JuanTorchia/gmm-haproxy-vscode/issues"
   },
+  "homepage": "https://gmmhub.net/products/haproxy-config-vscode",
   "engines": {
     "vscode": "^1.110.0",
     "node": ">=24.0.0"
@@ -41,7 +42,10 @@
     "syntax",
     "devops",
     "sre",
-    "infrastructure"
+    "infrastructure",
+    "validation",
+    "autocomplete",
+    "rename"
   ],
   "icon": "images/icon.png",
   "galleryBanner": {

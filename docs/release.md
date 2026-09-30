@@ -56,6 +56,7 @@ Before creating a release tag:
 2. Ensure `package.json.version` is exactly `X.Y.Z`.
 3. Ensure the tag is exactly `vX.Y.Z`.
 4. Ensure `CHANGELOG.md` has no placeholder entries.
+5. When `KNOWN_VERSIONS` changes, update the `haproxy.version` enum and descriptions, the README support table, and the Marketplace-facing `package.json` description in the same release.
 
 ## GitHub Release Notes
 
@@ -115,6 +116,8 @@ Do not publish unless all checks pass:
 - Package inspection confirms no secrets, local-only files, source maps, test files, or generated junk are bundled.
 
 Publishing must happen from GitHub Actions, not from a local machine.
+
+The Marketplace publisher must have a trusted publishing policy for this repository and `.github/workflows/publish.yml`. The workflow requests a short-lived OIDC token and must not fall back to `VSCE_PAT`.
 
 ## Demo Visuals
 
