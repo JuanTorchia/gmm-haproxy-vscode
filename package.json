@@ -55,8 +55,7 @@
   "main": "./client/out/extension.js",
   "activationEvents": [
     "onLanguage:properties",
-    "onLanguage:ini",
-    "onLanguage:plaintext"
+    "onLanguage:ini"
   ],
   "contributes": {
     "languages": [
