@@ -237,7 +237,7 @@ function validateDocument(doc: TextDocument): void {
   }
   const ast = astCache.get(doc.uri);
   if (!ast) return;
-  if (!hasConfigSections(ast)) {
+  if (!hasConfigSections(ast, doc.getText())) {
     void connection.sendDiagnostics({ uri: doc.uri, diagnostics: [] });
     return;
   }

@@ -4,22 +4,45 @@ import { hasConfigSections } from '../../server/src/configPresence';
 const parser = new HaproxyParser();
 
 describe('hasConfigSections', () => {
-  it('is true for a config with sections', () => {
-    expect(hasConfigSections(parser.parse('global\n    maxconn 10\n', 'test://a.cfg'))).toBe(true);
+  it('is true for a global section', () => {
+    const text = 'global\n    maxconn 10\n';
+    const ast = parser.parse(text, 'test://a.cfg');
+    expect(hasConfigSections(ast, text)).toBe(true);
   });
 
-  it('is false for an nginx file forced to haproxy (parsed as an unknown section)', () => {
-    const ast = parser.parse('server {\n    listen 80;\n}\n', 'test://nginx.conf');
-    expect(ast.sections).toHaveLength(1);
-    expect(hasConfigSections(ast)).toBe(false);
+  it('is false for an nginx file (listen header ends with semicolon)', () => {
+    const text = 'server {\n    listen 80;\n}\n';
+    const ast = parser.parse(text, 'test://nginx.conf');
+    expect(hasConfigSections(ast, text)).toBe(false);
   });
 
   it('is false for a fragment with directives but no section', () => {
-    const ast = parser.parse('    bind :80\n    default_backend web\n', 'test://frag.cfg');
-    expect(hasConfigSections(ast)).toBe(false);
+    const text = '    bind :80\n    default_backend web\n';
+    const ast = parser.parse(text, 'test://frag.cfg');
+    expect(hasConfigSections(ast, text)).toBe(false);
   });
 
   it('is false for an empty document', () => {
-    expect(hasConfigSections(parser.parse('', 'test://empty.cfg'))).toBe(false);
+    const text = '';
+    const ast = parser.parse(text, 'test://empty.cfg');
+    expect(hasConfigSections(ast, text)).toBe(false);
+  });
+
+  it('is true for indented backend section (indented headers remain valid)', () => {
+    const text = '    backend web\n        server a 10.0.0.1:80\n';
+    const ast = parser.parse(text, 'test://indented.cfg');
+    expect(hasConfigSections(ast, text)).toBe(true);
+  });
+
+  it('is true for section header with trailing comment', () => {
+    const text = 'frontend fe # public\n    bind :80\n';
+    const ast = parser.parse(text, 'test://commented.cfg');
+    expect(hasConfigSections(ast, text)).toBe(true);
+  });
+
+  it('is true for CRLF line endings', () => {
+    const text = 'global\r\n    maxconn 10\r\n';
+    const ast = parser.parse(text, 'test://crlf.cfg');
+    expect(hasConfigSections(ast, text)).toBe(true);
   });
 });
