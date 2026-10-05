@@ -45,4 +45,23 @@ describe('hasConfigSections', () => {
     const ast = parser.parse(text, 'test://crlf.cfg');
     expect(hasConfigSections(ast, text)).toBe(true);
   });
+
+  it('is false for a php-fpm pool with listen = socket', () => {
+    const text = '[www]\nuser = www-data\nlisten = /run/php/php8.2-fpm.sock\n';
+    const ast = parser.parse(text, 'test://www.conf');
+    expect(hasConfigSections(ast, text)).toBe(false);
+  });
+
+  it('is false for key = value and key: value settings', () => {
+    for (const text of ['cache = true\n', 'listen: 80\n', 'listen = *, ::\n']) {
+      const ast = parser.parse(text, 'test://settings.conf');
+      expect(hasConfigSections(ast, text)).toBe(false);
+    }
+  });
+
+  it('is true for a listen section with a bind line', () => {
+    const text = 'listen stats\n    bind :8404\n';
+    const ast = parser.parse(text, 'test://stats.cfg');
+    expect(hasConfigSections(ast, text)).toBe(true);
+  });
 });

@@ -2,14 +2,15 @@
 export const DETECTION_LINE_LIMIT = 200;
 
 const SECTION_HEADER =
-  /^(global|defaults|frontend|backend|listen|userlist|peers|resolvers|mailers|ring|log-forward|program|http-errors|cache|acme)(\s|$)/;
+  /^(global|defaults|frontend|backend|listen|userlist|peers|resolvers|mailers|ring|log-forward|program|http-errors|cache|acme)(?=\s|$)(?!\s*[=:])/;
 
 const GENERIC_LANGUAGES = new Set(['plaintext', 'ini', 'properties']);
 const CANDIDATE_EXTENSION = /\.(cfg|conf)$/i;
 
 /**
  * Whether a document looks like an HAProxy configuration: HAProxy requires
- * section headers at column 0, which other .cfg/.conf formats do not use.
+ * section headers at column 0, which other .cfg/.conf formats do not use. A keyword
+ * followed by `=` or `:` is a `key = value` setting (php-fpm, dovecot, ini), not a header.
  * @param text Full document text.
  * @returns `true` when a section header appears within the first lines.
  */

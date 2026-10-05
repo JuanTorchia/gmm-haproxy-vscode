@@ -42,6 +42,20 @@ describe('looksLikeHaproxyConfig', () => {
     expect(looksLikeHaproxyConfig('globals = 1\nbackends=2\n')).toBe(false);
   });
 
+  it('ignores a php-fpm pool whose listen is a setting', () => {
+    expect(looksLikeHaproxyConfig('[www]\nuser = www-data\nlisten = /run/php/php8.2-fpm.sock\n')).toBe(false);
+  });
+
+  it('ignores key = value and key: value settings named like section keywords', () => {
+    expect(looksLikeHaproxyConfig('cache = true\n')).toBe(false);
+    expect(looksLikeHaproxyConfig('listen: 80\n')).toBe(false);
+    expect(looksLikeHaproxyConfig('listen = *, ::\n')).toBe(false);
+  });
+
+  it('detects a listen section with a bind line', () => {
+    expect(looksLikeHaproxyConfig('listen stats\n    bind :8404\n')).toBe(true);
+  });
+
   it('ignores indented section headers', () => {
     expect(looksLikeHaproxyConfig('    frontend fe\n        bind :80\n')).toBe(false);
   });
