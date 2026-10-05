@@ -10,12 +10,17 @@ import { registerHaproxyDetection } from '../../client/src/haproxyDetectionContr
 type FakeDoc = {
   languageId: string;
   fileName: string;
-  uri: { scheme: string };
+  uri: { scheme: string; toString(): string };
   getText: () => string;
 };
 
 function doc(fileName: string, languageId: string, text: string): FakeDoc {
-  return { languageId, fileName, uri: { scheme: 'file' }, getText: () => text };
+  return {
+    languageId,
+    fileName,
+    uri: { scheme: 'file', toString: () => `file://${fileName}` },
+    getText: () => text,
+  };
 }
 
 function setup(openDocs: FakeDoc[]) {
@@ -52,6 +57,22 @@ describe('registerHaproxyDetection', () => {
     open(doc('/etc/nginx/site.conf', 'properties', 'server {\n    listen 80;\n}\n'));
     open(doc('/repo/setup.cfg', 'ini', '[metadata]\nname = x\n'));
     open(doc('/etc/nginx/nginx.conf', 'nginx', 'frontend looks-but-claimed\n'));
+    expect(setLanguage).not.toHaveBeenCalled();
+  });
+
+  it('respects a manual language choice after switching a document', () => {
+    const lb = doc('/etc/lb/lb.cfg', 'properties', 'frontend fe\n    bind :80\n');
+    const { setLanguage, open } = setup([lb]);
+    open({ ...lb, languageId: 'haproxy' });
+    open({ ...lb, languageId: 'properties' });
+    expect(setLanguage).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not re-evaluate a non-matching document when it is re-opened', () => {
+    const { setLanguage, open } = setup([]);
+    const site = doc('/srv/app.conf', 'plaintext', 'key = value\n');
+    open(site);
+    open({ ...site, getText: () => 'frontend fe\n' });
     expect(setLanguage).not.toHaveBeenCalled();
   });
 
