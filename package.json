@@ -53,6 +53,11 @@
     "theme": "dark"
   },
   "main": "./client/out/extension.js",
+  "activationEvents": [
+    "onLanguage:properties",
+    "onLanguage:ini",
+    "onLanguage:plaintext"
+  ],
   "contributes": {
     "languages": [
       {
@@ -61,13 +66,14 @@
           "HAProxy",
           "haproxy"
         ],
-        "extensions": [
-          ".cfg",
-          ".conf"
-        ],
         "filenames": [
           "haproxy.cfg",
           "haproxy.conf"
+        ],
+        "filenamePatterns": [
+          "haproxy*.cfg",
+          "**/haproxy/*.cfg",
+          "**/haproxy/*.conf"
         ],
         "configuration": "./language-configuration.json"
       }

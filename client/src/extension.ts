@@ -14,6 +14,7 @@ import {
   TransportKind,
 } from 'vscode-languageclient/node';
 import { restartLanguageServer, startLanguageServer } from './languageServerLifecycle';
+import { registerHaproxyDetection } from './haproxyDetectionController';
 import { registerRatingPrompt } from './ratingPromptController';
 
 let client: LanguageClient | undefined;
@@ -25,6 +26,7 @@ export function activate(context: ExtensionContext): void {
     statusBarItem = createStatusBarItem(context);
 
     registerCommands(context, client, statusBarItem);
+    registerHaproxyDetection(context);
     registerRatingPrompt(context, client);
 
     void startLanguageServer(client, {
