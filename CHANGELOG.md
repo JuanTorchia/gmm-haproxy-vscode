@@ -8,6 +8,9 @@ See [docs/release.md](docs/release.md) for changelog and release-note rules.
 
 ## [Unreleased]
 
+### Added
+- After regular use (5 distinct days with an HAProxy config open, at least 14 days after first use), the extension may ask for a Marketplace rating in a non-modal notification. "Later" postpones it 30 days; "Rate" or "Don't ask again" stop it for good, and it is never shown more than twice. It only appears in Microsoft VS Code, makes no network calls, and can be turned off with `haproxy.ratingPrompt.enabled`.
+
 ## [0.4.0] — 2026-09-30
 
 ### Added

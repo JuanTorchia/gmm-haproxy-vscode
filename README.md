@@ -176,6 +176,7 @@ All settings are available under `File → Preferences → Settings → HAProxy`
 | `haproxy.validate.enable` | `true` | Enable/disable live validation |
 | `haproxy.completion.enable` | `true` | Enable/disable autocompletion |
 | `haproxy.trace.server` | `off` | LSP trace level (`off` / `messages` / `verbose`) |
+| `haproxy.ratingPrompt.enabled` | `true` | Occasionally ask for a Marketplace rating after regular use (at most twice) |
 
 **Per-workspace version** — open `.vscode/settings.json` and add:
 ```json
@@ -252,6 +253,8 @@ Then press `F5` in VS Code to open an Extension Development Host with the extens
 - `npm test` must pass before larger runtime or integration changes
 
 If you use the Marketplace extension and notice missing HAProxy behavior, open an issue with a sanitized config snippet. Those reports directly improve completion, hover docs, and validation accuracy.
+
+**Rate / report issues** — if the extension helps you, [leave a review on the Marketplace](https://marketplace.visualstudio.com/items?itemName=gmm.gmm-haproxy-vscode&ssr=false#review-details); bugs and gaps go to [GitHub issues](https://github.com/JuanTorchia/gmm-haproxy-vscode/issues).
 
 ---
 
