@@ -1,8 +1,8 @@
 {
   "name": "gmm-haproxy-vscode",
   "displayName": "HAProxy Config",
-  "description": "Full language support for HAProxy configuration files — syntax highlighting, autocompletion, validation, hover docs, snippets, and formatting. Multi-version support from 2.4 LTS to 3.1.",
-  "version": "0.3.0",
+  "description": "Version-aware HAProxy 2.4–3.4 support with validation, completion, navigation, safe rename, hover docs, quick fixes, snippets, and formatting.",
+  "version": "0.4.0",
   "publisher": "gmm",
   "author": {
     "name": "Juan Torchia",
@@ -22,6 +22,7 @@
   "bugs": {
     "url": "https://github.com/JuanTorchia/gmm-haproxy-vscode/issues"
   },
+  "homepage": "https://gmmhub.net/products/haproxy-config-vscode",
   "engines": {
     "vscode": "^1.110.0",
     "node": ">=24.0.0"
@@ -41,7 +42,10 @@
     "syntax",
     "devops",
     "sre",
-    "infrastructure"
+    "infrastructure",
+    "validation",
+    "autocomplete",
+    "rename"
   ],
   "icon": "images/icon.png",
   "galleryBanner": {
@@ -169,31 +173,31 @@
     "@eslint/js": "10.0.1",
     "@types/jest": "30.0.0",
     "@types/mocha": "10.0.10",
-    "@types/node": "26.1.2",
+    "@types/node": "26.6.3",
     "@types/vscode": "1.110.0",
-    "@typescript-eslint/eslint-plugin": "8.65.0",
-    "@typescript-eslint/parser": "8.65.0",
+    "@typescript-eslint/eslint-plugin": "8.70.1",
+    "@typescript-eslint/parser": "8.70.1",
     "@vscode/test-electron": "3.1.0",
-    "@vscode/vsce": "3.9.2",
-    "esbuild": "0.28.1",
-    "eslint": "10.8.0",
+    "@vscode/vsce": "4.0.0",
+    "esbuild": "0.28.2",
+    "eslint": "10.11.0",
     "eslint-plugin-security": "4.0.1",
     "glob": "13.0.6",
-    "globals": "17.8.0",
-    "jest": "30.4.2",
-    "jest-util": "30.4.1",
-    "mocha": "11.7.6",
-    "ts-jest": "29.4.12",
+    "globals": "17.12.0",
+    "jest": "30.5.2",
+    "jest-util": "30.5.1",
+    "mocha": "12.0.2",
+    "ts-jest": "29.4.14",
     "typescript": "6.0",
-    "vscode-languageclient": "10.1.0",
-    "vscode-languageserver": "10.1.0",
-    "vscode-languageserver-textdocument": "1.0.12",
-    "vscode-languageserver-types": "3.18.0"
+    "vscode-languageclient": "10.1.2",
+    "vscode-languageserver": "10.1.2",
+    "vscode-languageserver-textdocument": "1.0.15",
+    "vscode-languageserver-types": "3.18.4"
   },
   "overrides": {
     "serialize-javascript": "7.0.5",
     "minimatch": "^10.2.6",
-    "brace-expansion": "^5.0.8",
+    "brace-expansion": "^5.0.12",
     "test-exclude": "^8.0.0"
   }
 }

@@ -10,6 +10,8 @@
 
 > Full language support for `.cfg` and `.conf` HAProxy files — with version-aware validation, intelligent autocompletion, and inline documentation right inside VS Code.
 
+Built and maintained by [Juan Torchia](https://github.com/JuanTorchia) as part of [GMM Software Solutions](https://gmmhub.net/).
+
 ---
 
 ## Why DevOps and SRE teams use it
@@ -69,6 +71,19 @@ Hover over any directive for instant reference: signature, description, valid se
 Press `F12` (or `Ctrl+Click`) on any backend name in a `use_backend` or `default_backend` directive to jump directly to its definition.
 
 ![Go-to-definition](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/05-definition.gif)
+
+---
+
+### Safe Rename, References, and Outline
+
+Navigate and refactor named HAProxy objects without hunting through the file by hand:
+
+- Press `F2` to rename backends, ACLs, servers, named defaults, caches, userlists, resolvers, and peers together with their references.
+- Press `Shift+F12` to find every reference, or use Peek to inspect them without leaving the current section.
+- Use `Ctrl+Shift+O` or the Outline panel to jump between `global`, `defaults`, `frontend`, `backend`, `listen`, and other named sections.
+- Matching definitions and references are highlighted under the cursor; negated ACL references such as `!is_api` preserve the `!` during rename.
+
+These operations use the extension's parsed symbol graph and stay inside the current configuration file. Review the resulting diff before reloading production HAProxy.
 
 ---
 
@@ -144,6 +159,8 @@ code --install-extension gmm.gmm-haproxy-vscode
 ```
 
 The extension activates automatically when you open any `.cfg` or `.conf` file named or detected as HAProxy config.
+
+Product overview and support boundaries: [gmmhub.net/products/haproxy-config-vscode](https://gmmhub.net/products/haproxy-config-vscode)
 
 ---
 

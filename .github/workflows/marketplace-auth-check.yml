@@ -1,0 +1,39 @@
+name: Check Marketplace authentication
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    environment: marketplace
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Sign in to Microsoft Entra
+        uses: azure/login@v3
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      - name: Show Marketplace identity resource ID
+        run: |
+          az rest \
+            --url https://app.vssps.visualstudio.com/_apis/profile/profiles/me \
+            --resource 499b84ac-1321-427f-aa17-267ca6975798 \
+            --query id \
+            --output tsv
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24.x'
+          cache: 'npm'
+
+      - name: Verify publisher access
+        run: npx @vscode/vsce verify-pat gmm --azure-credential

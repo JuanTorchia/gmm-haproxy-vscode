@@ -1,7 +1,13 @@
 version: 2
 updates:
+  # One entry for the three manifests so a group can span them: the LSP
+  # packages must move together across root, client and server or their
+  # types stop matching and the unit tests fail to compile.
   - package-ecosystem: npm
-    directory: /
+    directories:
+      - /
+      - /client
+      - /server
     target-branch: main
     schedule:
       interval: weekly
@@ -16,6 +22,11 @@ updates:
     commit-message:
       prefix: chore(deps)
     groups:
+      vscode-lsp:
+        patterns:
+          - "vscode-languageclient"
+          - "vscode-languageserver*"
+          - "vscode-jsonrpc"
       npm-development-dependencies:
         dependency-type: development
         patterns:
@@ -31,38 +42,6 @@ updates:
       - dependency-name: "typescript"
         update-types:
           - version-update:semver-major
-
-  - package-ecosystem: npm
-    directory: /client
-    target-branch: main
-    schedule:
-      interval: weekly
-      day: monday
-      time: "09:15"
-      timezone: America/Argentina/Buenos_Aires
-    open-pull-requests-limit: 3
-    versioning-strategy: increase
-    labels:
-      - dependencies
-      - security
-    commit-message:
-      prefix: chore(deps)
-
-  - package-ecosystem: npm
-    directory: /server
-    target-branch: main
-    schedule:
-      interval: weekly
-      day: monday
-      time: "09:30"
-      timezone: America/Argentina/Buenos_Aires
-    open-pull-requests-limit: 3
-    versioning-strategy: increase
-    labels:
-      - dependencies
-      - security
-    commit-message:
-      prefix: chore(deps)
 
   - package-ecosystem: github-actions
     directory: /
