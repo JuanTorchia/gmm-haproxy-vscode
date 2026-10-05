@@ -27,6 +27,10 @@ suite('Language features on basic.cfg', () => {
     const uri = vscode.Uri.file(FIXTURE_PATH);
     doc = await vscode.workspace.openTextDocument(uri);
     await vscode.window.showTextDocument(doc);
+    for (let i = 0; i < 20 && doc.languageId !== 'haproxy'; i++) {
+      await new Promise((r) => setTimeout(r, 250));
+      doc = vscode.workspace.textDocuments.find((d) => d.uri.toString() === uri.toString()) ?? doc;
+    }
     // Allow LSP to initialize and publish diagnostics
     await new Promise((r) => setTimeout(r, 3000));
   });
@@ -72,5 +76,16 @@ suite('Language features on basic.cfg', () => {
       pos
     );
     assert.ok(hovers && hovers.length > 0, 'No hover result returned');
+  });
+});
+
+suite('Content detection', () => {
+  test('a non-HAProxy .conf keeps its language and gets no HAProxy diagnostics', async () => {
+    const uri = vscode.Uri.file(path.resolve(__dirname, '../../../test/fixtures/nginx-site.conf'));
+    const nginx = await vscode.workspace.openTextDocument(uri);
+    await vscode.window.showTextDocument(nginx);
+    await new Promise((r) => setTimeout(r, 2000));
+    assert.notStrictEqual(nginx.languageId, 'haproxy');
+    assert.strictEqual(vscode.languages.getDiagnostics(nginx.uri).length, 0);
   });
 });

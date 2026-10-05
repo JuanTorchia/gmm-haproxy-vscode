@@ -14,6 +14,8 @@ import {
   TransportKind,
 } from 'vscode-languageclient/node';
 import { restartLanguageServer, startLanguageServer } from './languageServerLifecycle';
+import { registerHaproxyDetection } from './haproxyDetectionController';
+import { createStartOnce, StartOnce, startWhenHaproxyAppears } from './lazyLanguageServer';
 import { registerRatingPrompt } from './ratingPromptController';
 
 let client: LanguageClient | undefined;
@@ -21,16 +23,22 @@ let statusBarItem: StatusBarItem | undefined;
 
 export function activate(context: ExtensionContext): void {
   try {
-    client = createLanguageClient(context);
-    statusBarItem = createStatusBarItem(context);
+    const lsClient = createLanguageClient(context);
+    const statusBar = createStatusBarItem(context);
+    client = lsClient;
+    statusBarItem = statusBar;
 
-    registerCommands(context, client, statusBarItem);
-    registerRatingPrompt(context, client);
+    const server = createStartOnce(() =>
+      startLanguageServer(lsClient, {
+        onStarted: () => updateStatusBar(statusBar),
+        showErrorMessage: window.showErrorMessage,
+      })
+    );
 
-    void startLanguageServer(client, {
-      onStarted: () => updateStatusBar(statusBarItem),
-      showErrorMessage: window.showErrorMessage,
-    });
+    registerCommands(context, lsClient, statusBar, server);
+    registerHaproxyDetection(context);
+    registerRatingPrompt(context, lsClient);
+    startWhenHaproxyAppears(context, () => void server.start());
   } catch (err) {
     void window.showErrorMessage(
       `HAProxy extension failed to activate: ${String(err)}. Check the HAProxy output channel.`
@@ -85,10 +93,15 @@ function updateStatusBar(item: StatusBarItem | undefined): void {
 function registerCommands(
   context: ExtensionContext,
   lsClient: LanguageClient,
-  statusBar: StatusBarItem | undefined
+  statusBar: StatusBarItem,
+  server: StartOnce
 ): void {
   context.subscriptions.push(
     commands.registerCommand('haproxy.restartServer', async () => {
+      if (!server.hasStarted()) {
+        await server.start();
+        return;
+      }
       await restartLanguageServer(lsClient, {
         onStarted: () => updateStatusBar(statusBar),
         showErrorMessage: window.showErrorMessage,
@@ -117,14 +130,14 @@ function registerCommands(
         await workspace
           .getConfiguration('haproxy')
           .update('version', selected.version);
-        updateStatusBar(statusBar);
+        await server.start();
       }
     })
   );
 
   context.subscriptions.push(
     workspace.onDidChangeConfiguration((e: { affectsConfiguration: (s: string) => boolean }) => {
-      if (e.affectsConfiguration('haproxy.version')) {
+      if (e.affectsConfiguration('haproxy.version') && server.hasStarted()) {
         updateStatusBar(statusBar);
       }
     })
