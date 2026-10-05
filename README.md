@@ -158,7 +158,11 @@ Selecting a version that has reached end of life adds a warning diagnostic to th
 code --install-extension gmm.gmm-haproxy-vscode
 ```
 
-The extension activates automatically when you open any `.cfg` or `.conf` file named or detected as HAProxy config.
+The extension recognizes `haproxy.cfg`, `haproxy.conf`, `haproxy*.cfg` and files under a `haproxy/` directory automatically. Other `.cfg` and `.conf` files switch to HAProxy only when they contain an HAProxy section header (`global`, `defaults`, `frontend`, `backend`, `listen`, …) at the start of a line; nginx, Samba, `setup.cfg` and other formats keep their own language. To force a file, add it to `files.associations`:
+
+```json
+"files.associations": { "**/lb/*.conf": "haproxy" }
+```
 
 Product overview and support boundaries: [gmmhub.net/products/haproxy-config-vscode](https://gmmhub.net/products/haproxy-config-vscode)
 
