@@ -12,6 +12,7 @@ See [docs/release.md](docs/release.md) for changelog and release-note rules.
 
 ### Changed
 - The extension no longer claims every `.cfg` and `.conf` file. It recognizes `haproxy.cfg`, `haproxy.conf`, `haproxy*.cfg` and files under `haproxy/` by name, and switches other `.cfg`/`.conf` files to HAProxy only when they contain an HAProxy section header. Documents without any HAProxy section no longer receive diagnostics. Use `files.associations` to force a file (#72).
+- A language picked manually for a `.cfg`/`.conf` file is respected for the rest of the session, and the language server now starts only when an HAProxy file is opened.
 
 ## [0.5.0] — 2026-10-05
 

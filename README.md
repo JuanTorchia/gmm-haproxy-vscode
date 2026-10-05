@@ -8,7 +8,7 @@
 
 **Version-aware HAProxy language support for VS Code.** Stop memorizing directive names, guessing valid options, and discovering config errors only when HAProxy refuses to start.
 
-> Full language support for `.cfg` and `.conf` HAProxy files — with version-aware validation, intelligent autocompletion, and inline documentation right inside VS Code.
+> Full language support for HAProxy configuration files — recognized by name or by their section headers — with version-aware validation, intelligent autocompletion, and inline documentation right inside VS Code.
 
 Built and maintained by [Juan Torchia](https://github.com/JuanTorchia) as part of [GMM Software Solutions](https://gmmhub.net/).
 
@@ -158,7 +158,7 @@ Selecting a version that has reached end of life adds a warning diagnostic to th
 code --install-extension gmm.gmm-haproxy-vscode
 ```
 
-The extension recognizes `haproxy.cfg`, `haproxy.conf`, `haproxy*.cfg` and files under a `haproxy/` directory automatically. Other `.cfg` and `.conf` files switch to HAProxy only when they contain an HAProxy section header (`global`, `defaults`, `frontend`, `backend`, `listen`, …) at the start of a line; nginx, Samba, `setup.cfg` and other formats keep their own language. To force a file, add it to `files.associations`:
+The extension recognizes `haproxy.cfg`, `haproxy.conf`, `haproxy*.cfg` and files under a `haproxy/` directory automatically. Other `.cfg` and `.conf` files switch to HAProxy only when they contain an HAProxy section header (`global`, `defaults`, `frontend`, `backend`, `listen`, …) at the start of a line; nginx, Samba, `setup.cfg` and other formats keep their own language. If another extension (nginx, Apache) already claims `.conf` files, that language takes priority. A language you pick manually is kept for the session. To force HAProxy for a file, add it to `files.associations`:
 
 ```json
 "files.associations": { "**/lb/*.conf": "haproxy" }
