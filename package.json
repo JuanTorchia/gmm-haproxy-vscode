@@ -136,6 +136,12 @@
           ],
           "description": "Language server trace level for debugging.",
           "markdownDescription": "Controls LSP message tracing. Set to `messages` or `verbose` to debug language server communication."
+        },
+        "haproxy.ratingPrompt.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Occasionally ask for a Marketplace rating after regular use.",
+          "markdownDescription": "Occasionally ask for a VS Code Marketplace rating after regular use (at most twice, never in the first session). Only shown in Microsoft VS Code."
         }
       }
     },
@@ -162,7 +168,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "npm run test:unit && npm run test:integration",
-    "test:unit": "jest test/parser test/validator test/completion test/hover test/grammar test/formatter test/symbols test/definition test/references test/highlights test/rename test/codeactions test/folding test/registry test/settings test/client test/server",
+    "test:unit": "jest test/parser test/validator test/completion test/hover test/grammar test/formatter test/symbols test/definition test/references test/highlights test/rename test/codeactions test/folding test/registry test/settings test/client test/server test/rating",
     "test:integration": "node ./test/integration/runTests.js",
     "package": "vsce package",
     "package:check": "node scripts/check-vsix-contents.cjs",

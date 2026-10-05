@@ -14,6 +14,7 @@ import {
   TransportKind,
 } from 'vscode-languageclient/node';
 import { restartLanguageServer, startLanguageServer } from './languageServerLifecycle';
+import { registerRatingPrompt } from './ratingPromptController';
 
 let client: LanguageClient | undefined;
 let statusBarItem: StatusBarItem | undefined;
@@ -24,6 +25,7 @@ export function activate(context: ExtensionContext): void {
     statusBarItem = createStatusBarItem(context);
 
     registerCommands(context, client, statusBarItem);
+    registerRatingPrompt(context, client);
 
     void startLanguageServer(client, {
       onStarted: () => updateStatusBar(statusBarItem),
