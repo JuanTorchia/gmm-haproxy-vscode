@@ -15,6 +15,20 @@ const SECTION_KEYWORDS = new Set<string>([
   'log-forward', 'program', 'http-errors', 'cache', 'acme',
 ]);
 
+// Common HAProxy directive keywords to distinguish from unknown keywords
+const KNOWN_DIRECTIVES = new Set<string>([
+  // Global directives
+  'daemon', 'maxconn', 'chroot', 'user', 'group', 'pidfile',
+  'stats', 'log', 'log-tag', 'tune.ssl', 'nbproc', 'nbthread',
+  'cpu-map', 'setenv', 'presetenv', 'unsetenv',
+  // Frontend/Backend directives
+  'bind', 'use-fcgi-app', 'use-backend', 'use-server',
+  'default-backend', 'mode', 'server', 'option', 'timeout',
+  'error-file', 'capture', 'declare', 'stick', 'balance',
+  'http-request', 'http-response', 'tcp-request', 'tcp-response',
+  'acl', 'redirect', 'filter', 'validation', 'accept-proxy',
+]);
+
 /** Physical source segment that contributes tokens to one logical continued directive. */
 interface LogicalLineSegment {
   readonly text: string;
@@ -75,7 +89,7 @@ export class HaproxyParser {
       if (!firstToken) continue;
       const keyword = firstToken.value.toLowerCase();
 
-      if (SECTION_KEYWORDS.has(keyword)) {
+      if (SECTION_KEYWORDS.has(keyword) && indentLength === 0) {
         if (currentSection) {
           sectionBuilders.push(currentSection);
         }
@@ -99,6 +113,27 @@ export class HaproxyParser {
       } else if (currentSection) {
         const directive = buildDirective(tokens, segments);
         currentSection.addDirective(directive);
+      } else if (indentLength === 0) {
+        // Column-0 token outside any section, and not a known section keyword
+        if (KNOWN_DIRECTIVES.has(keyword)) {
+          // Known directive outside section -> error
+          parseErrors.push({
+            message: `Directive '${firstToken.value}' appears outside of any section.`,
+            range: makeRange(startLineIndex, 0, startLineIndex, rawLine.length),
+          });
+        } else {
+          // Unknown keyword -> create unknown section (likely non-HAProxy config)
+          if (currentSection) {
+            sectionBuilders.push(currentSection);
+          }
+          currentSection = new SectionBuilder(
+            'unknown',
+            firstToken.value,
+            firstToken,
+            undefined,
+            makeRange(startLineIndex, 0, startLineIndex, rawLine.length)
+          );
+        }
       } else {
         parseErrors.push({
           message: `Directive '${firstToken.value}' appears outside of any section.`,

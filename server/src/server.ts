@@ -48,6 +48,7 @@ import {
   OversizedDocumentTracker,
   shouldSkipValidationForLineCount,
 } from './documentSizePolicy';
+import { hasConfigSections } from './configPresence';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments<TextDocument>(TextDocument);
@@ -236,6 +237,10 @@ function validateDocument(doc: TextDocument): void {
   }
   const ast = astCache.get(doc.uri);
   if (!ast) return;
+  if (!hasConfigSections(ast)) {
+    void connection.sendDiagnostics({ uri: doc.uri, diagnostics: [] });
+    return;
+  }
   const validator = new ValidationProvider(registry, settings.version);
   const diagnostics = validator.validate(ast);
   void connection.sendDiagnostics({ uri: doc.uri, diagnostics });
