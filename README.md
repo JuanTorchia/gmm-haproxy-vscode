@@ -166,6 +166,8 @@ The extension recognizes `haproxy.cfg`, `haproxy.conf`, `haproxy*.cfg` and files
 
 Product overview and support boundaries: [gmmhub.net/products/haproxy-config-vscode](https://gmmhub.net/products/haproxy-config-vscode)
 
+How to check an HAProxy config before reload, version by version: [gmmhub.net/haproxy-config-check](https://gmmhub.net/haproxy-config-check)
+
 ---
 
 ## Configuration
