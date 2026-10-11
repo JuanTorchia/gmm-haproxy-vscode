@@ -8,6 +8,8 @@ See [docs/release.md](docs/release.md) for changelog and release-note rules.
 
 ## [Unreleased]
 
+## [0.6.1] — 2026-10-11
+
 ### Changed
 - The README and Marketplace page now document renaming a backend with `F2`, Find All References with `Shift+F12`, occurrence highlighting, and the Outline view / Go to Symbol with `Ctrl+Shift+O`, with a rename demo and screenshots (#73).
 
