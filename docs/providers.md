@@ -173,3 +173,100 @@ Returns an empty array if the document is already correctly formatted (no-op cas
 - `consecutiveBlanks: number` — to enforce the max-1 blank line rule
 
 The entire document is replaced with a single `TextEdit.replace` covering the full range. If the result is identical to the input, an empty array is returned to avoid unnecessary `didChange` events.
+
+---
+
+## Symbol Resolution (shared)
+
+**File:** `server/src/shared/symbolResolver.ts`
+
+Definition, references, document highlight, and rename all answer the same two questions, so they share one resolver instead of importing from each other:
+
+- `resolveSymbolAtPosition(doc, position)` returns the named symbol under the cursor (`{ name, kind, scopeHeaderLine? }`) or `null`.
+- `collectOccurrences(doc, symbol)` returns every `{ range, isDefinition }` for that symbol in the document.
+
+Name matching is case-insensitive and token-based, never substring text search.
+
+| Kind | Definition | References | Scope |
+|------|------------|------------|-------|
+| `backend` | `backend <name>`, `listen <name>` | `use_backend <name>`, `default_backend <name>` | File |
+| `defaults` | `defaults <name>` | `from <name>` in section headers | File |
+| `acl` | `acl <name> …` | names in `if` / `unless` conditions, including `!<name>` | Owning section |
+| `server` | `server <name>`, `server-template <name>` | `use-server <name>` | Owning section |
+| `cache` | `cache <name>` | `http-request cache-use <name>`, `http-response cache-store <name>` | File |
+| `userlist` | `userlist <name>` | `http_auth(<name>)`, `http_auth_group(<name>)` | File |
+| `resolvers` | `resolvers <name>` | `server … resolvers <name>` | File |
+| `peers` | `peers <name>` | `stick-table … peers <name>` | File |
+
+Dynamic backend names such as `use_backend %[req.hdr(host)]` are not resolved. For negated ACL references the returned range excludes the `!`.
+
+---
+
+## DefinitionProvider
+
+**File:** `server/src/definition/definitionProvider.ts`
+
+### Method: `provideDefinition(doc: HaproxyDocument, position: Position): Location | null`
+
+Returns the location of the definition occurrence for the symbol under the cursor (`F12`, `Ctrl+Click`). On the definition itself it returns its own location, which lets VS Code fall back to its references peek.
+
+---
+
+## ReferencesProvider
+
+**File:** `server/src/references/referencesProvider.ts`
+
+### Method: `provideReferences(doc: HaproxyDocument, position: Position, includeDeclaration: boolean): Location[]`
+
+Backs **Find All References** (`Shift+F12`, `Shift+Alt+F12`). Returns every occurrence of the symbol under the cursor; the definition is dropped when `includeDeclaration` is `false`.
+
+---
+
+## DocumentHighlightProvider
+
+**File:** `server/src/highlights/documentHighlightProvider.ts`
+
+### Method: `provideHighlights(doc: HaproxyDocument, position: Position): DocumentHighlight[]`
+
+Highlights all occurrences of the symbol under the cursor. The definition is returned with `DocumentHighlightKind.Write` and references with `DocumentHighlightKind.Read`, so themes can tell them apart.
+
+---
+
+## RenameProvider
+
+**File:** `server/src/rename/renameProvider.ts`
+
+### Method: `prepareRename(doc: HaproxyDocument, position: Position): { range: Range; placeholder: string } | null`
+
+Runs before the rename box opens (`F2`). Returns the range of the name under the cursor and the current name as placeholder, or `null` when the cursor is not on a renameable symbol, so VS Code shows "cannot rename" instead of opening the box.
+
+### Method: `provideRename(doc: HaproxyDocument, position: Position, newName: string): WorkspaceEdit | null`
+
+Returns one `WorkspaceEdit` that replaces every occurrence returned by `collectOccurrences` with `newName`. The edit is applied atomically and stays within the current document. For `!acl` references only the name is replaced, so the negation is preserved.
+
+---
+
+## SymbolsProvider
+
+**File:** `server/src/symbols/symbolsProvider.ts`
+
+### Method: `provideSymbols(doc: HaproxyDocument): DocumentSymbol[]`
+
+Backs the Outline view, breadcrumbs, and **Go to Symbol in Editor** (`Ctrl+Shift+O`). Returns one symbol per section, labelled `<type> <name>` (or just `<type>` for unnamed sections such as `global`), with the section's full line range.
+
+| Section type | `SymbolKind` |
+|--------------|--------------|
+| `global` | `Namespace` |
+| `frontend` | `Interface` |
+| `backend` | `Class` |
+| `listen` | `Function` |
+| `userlist` | `Object` |
+| Other sections (`defaults`, `peers`, `resolvers`, `cache`, …) | `Module` |
+
+Child symbols surface the structural directives of each section:
+
+| Directive | Child label | `SymbolKind` | Detail |
+|-----------|-------------|--------------|--------|
+| `bind` | `bind <address>` | `Event` | — |
+| `server`, `default-server` | `server <name>` | `Field` | server address |
+| `acl` | `acl <name>` | `Constant` | — |
