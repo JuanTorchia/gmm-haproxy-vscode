@@ -8,6 +8,9 @@ See [docs/release.md](docs/release.md) for changelog and release-note rules.
 
 ## [Unreleased]
 
+### Security
+- Updated the test tooling's `handlebars` to 4.7.10, resolving critical JavaScript-injection advisories in 4.7.9. `handlebars` is a development dependency of `ts-jest` and is not bundled in the extension.
+
 ## [0.6.0] — 2026-10-05
 
 ### Changed
