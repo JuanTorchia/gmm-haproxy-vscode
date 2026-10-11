@@ -8,6 +8,9 @@ See [docs/release.md](docs/release.md) for changelog and release-note rules.
 
 ## [Unreleased]
 
+### Changed
+- The README and Marketplace page now document renaming a backend with `F2`, Find All References with `Shift+F12`, occurrence highlighting, and the Outline view / Go to Symbol with `Ctrl+Shift+O`, with a rename demo and screenshots (#73).
+
 ### Security
 - Updated the test tooling's `handlebars` to 4.7.10, resolving critical JavaScript-injection advisories in 4.7.9. `handlebars` is a development dependency of `ts-jest` and is not bundled in the extension.
 

@@ -18,7 +18,7 @@ Built and maintained by [Juan Torchia](https://github.com/JuanTorchia) as part o
 
 - **Catch mistakes before reloads** — unknown directives, wrong sections, undefined backends, deprecated options, and version mismatches show up while editing.
 - **Edit against the HAProxy version you run** — validate configs for HAProxy 2.4 through 3.4 per workspace.
-- **Keep context in VS Code** — completions, hover docs, snippets, formatting, folding, symbol navigation, and quick fixes reduce trips to the manual.
+- **Keep context in VS Code** — completions, hover docs, snippets, formatting, folding, quick fixes, safe backend rename, find all references, and Outline navigation reduce trips to the manual.
 
 If this extension helps you avoid HAProxy config mistakes, consider starring the repo so other operators can find it.
 
@@ -74,16 +74,33 @@ Press `F12` (or `Ctrl+Click`) on any backend name in a `use_backend` or `default
 
 ---
 
-### Safe Rename, References, and Outline
+### Rename Backend, Find All References, and Outline
 
-Navigate and refactor named HAProxy objects without hunting through the file by hand:
+Navigate and refactor named HAProxy objects without hunting through the file by hand. Everything below works on the parsed config, not on text search, so a backend called `api` never matches `api-v1` or a path like `/api`.
 
-- Press `F2` to rename backends, ACLs, servers, named defaults, caches, userlists, resolvers, and peers together with their references.
-- Press `Shift+F12` to find every reference, or use Peek to inspect them without leaving the current section.
-- Use `Ctrl+Shift+O` or the Outline panel to jump between `global`, `defaults`, `frontend`, `backend`, `listen`, and other named sections.
-- Matching definitions and references are highlighted under the cursor; negated ACL references such as `!is_api` preserve the `!` during rename.
+#### Rename a backend safely (`F2`)
 
-These operations use the extension's parsed symbol graph and stay inside the current configuration file. Review the resulting diff before reloading production HAProxy.
+Put the cursor on a backend name — in its `backend` header or in any `use_backend` / `default_backend` line — and press `F2`. The new name is applied to the definition and every reference in one edit, so no `use_backend` line is left pointing at the old name.
+
+Rename also works for ACLs, servers, named `defaults`, caches, userlists, resolvers, and peers. Negated ACL references such as `!is_api` keep the `!`. Press `Ctrl+Enter` in the rename box to preview the edit before applying it.
+
+![Renaming a backend with F2 updates the backend header, both use_backend lines and default_backend](docs/images/10-rename.gif)
+
+Focused demo config: [`docs/demo-configs/10-rename.cfg`](docs/demo-configs/10-rename.cfg)
+
+#### Find all references and highlight occurrences (`Shift+F12`)
+
+Press `Shift+F12` on a backend, ACL, or server name to peek every place it is defined and used, or `Shift+Alt+F12` to list them in the References panel. Placing the cursor on a name also highlights its definition and all of its references in the editor, so you can see at a glance which frontends route to a backend before you change or remove it.
+
+![Find all references on a backend shows its definition, two use_backend lines and a default_backend line](docs/images/11-references.png)
+
+#### Outline and Go to Symbol (`Ctrl+Shift+O`)
+
+The Outline view and breadcrumbs list every section — `global`, `defaults`, `frontend`, `backend`, `listen`, `userlist`, and the rest — with their `bind`, `acl`, and `server` lines nested underneath. Press `Ctrl+Shift+O` (`Cmd+Shift+O` on macOS) to jump to any section or server by name in a large config.
+
+![Outline view listing frontends, backends, binds, ACLs and servers of an HAProxy config](docs/images/12-outline.png)
+
+Rename, references, highlights, and symbols stay inside the current configuration file. Review the resulting diff before reloading production HAProxy.
 
 ---
 

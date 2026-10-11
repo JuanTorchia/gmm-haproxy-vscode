@@ -33,6 +33,7 @@ The script generates:
 | `03-validation.gif` | `03-validation-error.png`, `03-validation-warning.png`, `03-validation-warning-backend.png` |
 | `04-hover.gif` | `04-hover-balance.png`, `04-hover-http-request.png`, `04-hover-httpchk.png`, `04-hover-stick-table.png`, `04-hover-timeout.png` |
 | `09-undefined-backend.gif` | `09-undefined-backend.png` |
+| `10-rename.gif` | `10-rename-highlight.png`, `10-rename-prompt.png`, `10-rename-typing.png`, `10-rename-typed.png`, `10-rename-done.png` |
 
 ## Source Frames
 
@@ -43,6 +44,8 @@ Do not edit generated GIFs by hand. Update the PNG source frames, run `npm run d
 ## Demo Configs
 
 Use `docs/demo-configs/09-undefined-backend.cfg` when refreshing the undefined-backend diagnostic source frame. It is intentionally small so the capture shows the cross-reference warning without unrelated diagnostics.
+
+Use `docs/demo-configs/10-rename.cfg` for the rename GIF frames and for the `11-references.png` (Find All References peek) and `12-outline.png` (Outline view) screenshots. Its header lists the cursor position and keystrokes for each frame. Open it from a neutral path so the references peek does not show a personal directory.
 
 ## Review Checklist
 

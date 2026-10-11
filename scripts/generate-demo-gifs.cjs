@@ -44,6 +44,17 @@ const demos = [
       '09-undefined-backend.png',
     ],
   },
+  {
+    output: '10-rename.gif',
+    delay: 120,
+    frames: [
+      '10-rename-highlight.png',
+      '10-rename-prompt.png',
+      '10-rename-typing.png',
+      '10-rename-typed.png',
+      '10-rename-done.png',
+    ],
+  },
 ];
 
 function requireMagick() {
