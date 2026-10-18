@@ -152,7 +152,7 @@ If the extension does not behave as expected when running locally, try the follo
 
 ---
 
-## ESLint Configuration (`.eslintrc.json`)
+## ESLint Configuration (`eslint.config.js`, flat config)
 
 Key rules enforced:
 - `@typescript-eslint/no-explicit-any` — no `any` types
