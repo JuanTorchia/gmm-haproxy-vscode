@@ -35,6 +35,19 @@ export interface DirectiveDef {
   readonly docsUrl?: string;
   /** Category for grouping in completion UI. */
   readonly category?: DirectiveCategory;
+  /**
+   * Minimum number of arguments after the directive name (for a combined name
+   * such as `stats uri`, after both words). Set only where the count is
+   * unambiguous; leave undefined to skip arity validation entirely.
+   */
+  readonly minArgs?: number;
+  /** Maximum number of arguments, only for genuinely fixed-arity directives. */
+  readonly maxArgs?: number;
+  /**
+   * Human-readable names of the required arguments, in order, used in
+   * diagnostics (e.g. `['a name', 'an address']`). Length must equal `minArgs`.
+   */
+  readonly requiredArgs?: readonly string[];
 }
 
 export type DirectiveCategory =

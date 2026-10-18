@@ -237,6 +237,9 @@ export const GLOBAL_DIRECTIVES: DirectiveDef[] = [
   {
     name: 'maxconn',
     signature: 'maxconn <number>',
+    minArgs: 1,
+    maxArgs: 1,
+    requiredArgs: ['a connection count'],
     description: 'Set the maximum total number of concurrent connections HAProxy will accept.',
     sections: GLOBAL,
     since: '1.0',

@@ -18,6 +18,12 @@ export interface DirectiveDefinition {
   readonly httpOnly?: boolean;
   readonly invertible?: boolean;
   readonly category?: string;
+  /** Minimum argument count after the resolved name; undefined means unchecked. */
+  readonly minArgs?: number;
+  /** Maximum argument count after the resolved name; undefined means unbounded. */
+  readonly maxArgs?: number;
+  /** Human-readable names of the required arguments, used in diagnostics. */
+  readonly requiredArgs?: readonly string[];
 }
 
 /** Ordered list of known versions from oldest to newest. */
@@ -68,6 +74,9 @@ export class VersionRegistry {
         tcpOnly: d.tcpOnly,
         invertible: d.invertible,
         category: d.category,
+        minArgs: d.minArgs,
+        maxArgs: d.maxArgs,
+        requiredArgs: d.requiredArgs,
       };
       // Don't overwrite an existing entry — proxy definitions take precedence
       // (e.g. 'bind' or 'server' as proxy directives vs special-section variants)
