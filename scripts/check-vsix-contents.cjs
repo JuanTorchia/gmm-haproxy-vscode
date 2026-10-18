@@ -14,23 +14,17 @@ const allowedEntries = [
   'README.md',
   'CHANGELOG.md',
   'LICENSE',
-  'ROADMAP.md',
-  'SECURITY.md',
-  'SUPPORT.md',
-  'GOOD_FIRST_ISSUES.md',
   'language-configuration.json',
-  'images/',
+  'images/icon.png',
   'syntaxes/',
   'snippets/',
-  'client/package.json',
   'client/out/extension.js',
-  'server/package.json',
   'server/out/server.js',
 ];
 
-// Ceilings set from the clean package (17 files, ~1.65 MiB unpacked). Raising
+// Ceilings set from the clean package (10 files, ~1.65 MiB unpacked). Raising
 // either one must be a deliberate change in the same PR that grows the package.
-const maxFileCount = 17;
+const maxFileCount = 10;
 const maxTotalBytes = 2 * 1024 * 1024;
 
 // Keep this list intentionally conservative. If a file matches one of these

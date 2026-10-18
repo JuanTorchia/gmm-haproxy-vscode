@@ -47,6 +47,19 @@ google-application-credentials*.json
 *.cer
 *.kubeconfig
 
+# Repo-only docs. README links to them are rewritten to GitHub URLs by vsce.
+ROADMAP.md
+SECURITY.md
+SUPPORT.md
+GOOD_FIRST_ISSUES.md
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+images/icon.svg
+
+# Not read at runtime: the bundles are self-contained.
+client/package.json
+server/package.json
+
 # Ship only the esbuild bundles. Allowlist so new tsc output directories cannot leak.
 client/out/**
 server/out/**

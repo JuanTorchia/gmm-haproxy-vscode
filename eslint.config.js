@@ -12,6 +12,7 @@ module.exports = [
       '**/out/**',
       '**/node_modules/**',
       '**/.vscode-test/**',
+      '.claude/**',
       '**/*.d.ts',
       'eslint.config.js',
       'jest.config.js',
