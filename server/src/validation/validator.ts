@@ -1,29 +1,41 @@
-import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver/node';
-import { HaproxyDocument, HaproxySection, HaproxyDirective, SourceRange } from '../parser/ast';
+import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver/node';
+import { HaproxyDocument, HaproxySection, HaproxyDirective } from '../parser/ast';
 import { VersionRegistry, VERSION_EOL } from '../registry/versionRegistry';
-import { ACTIONS, ActionRulesets } from '../data/actions';
 import { validateCrossReferences, validateUnreferencedSymbols } from './validatorCrossRef';
+import { RuleContext, ruleError } from './rules/shared';
+import { deprecationRule } from './rules/deprecationRule';
+import { wrongSectionRule } from './rules/sectionRule';
+import { modeConflictRule } from './rules/modeRule';
+import { actionKeywordRule } from './rules/actionRule';
 import { timeoutValueRule } from './rules/timeoutRule';
 import { portRangeRule } from './rules/portRule';
 
 const MAX_DIAGNOSTICS = 100;
 
-/**
- * Maps a fully-resolved directive name (e.g. "tcp-request connection") to the
- * ActionRulesets key and the arg index that contains the action sub-keyword.
- */
-const ACTION_DIRECTIVE_RULESETS: Record<string, { key: keyof ActionRulesets; actionArgIdx: number }> = {
-  'http-request':            { key: 'httpReq', actionArgIdx: 0 },
-  'http-response':           { key: 'httpRes', actionArgIdx: 0 },
-  'http-after-response':     { key: 'httpAft', actionArgIdx: 0 },
-  'tcp-request connection':  { key: 'tcpRqCon', actionArgIdx: 1 },
-  'tcp-request session':     { key: 'tcpRqSes', actionArgIdx: 1 },
-  'tcp-request content':     { key: 'tcpRqCnt', actionArgIdx: 1 },
-  'tcp-response content':    { key: 'tcpRsCnt', actionArgIdx: 1 },
-};
+/** A per-directive validation strategy. */
+type DirectiveRule = (directive: HaproxyDirective, context: RuleContext) => Diagnostic[];
+
+/** Rules applied, in order, to every directive that resolved to a known definition. */
+const DIRECTIVE_RULES: readonly DirectiveRule[] = [
+  deprecationRule,
+  wrongSectionRule,
+  modeConflictRule,
+  actionKeywordRule,
+  timeoutValueRule,
+  portRangeRule,
+];
 
 /**
  * Validates a parsed HAProxy document against a specific version's directive set.
+ *
+ * This class is the composition root: it resolves each directive against the
+ * registry and hands the result to the rules in `rules/`. Two things stay here
+ * on purpose rather than becoming rules:
+ *  - Directive resolution (combined-name lookup and the since-version fallback
+ *    for unknown directives) produces the definition every rule reads, so it
+ *    cannot itself be a rule.
+ *  - The end-of-life warning is about the whole document, not one directive,
+ *    and does not fit the `(directive, context)` rule signature.
  */
 export class ValidationProvider {
   constructor(
@@ -47,12 +59,7 @@ export class ValidationProvider {
 
     // Surface parse errors first
     for (const err of doc.parseErrors) {
-      diagnostics.push({
-        severity: DiagnosticSeverity.Error,
-        range: toRange(err.range),
-        message: err.message,
-        source: 'haproxy',
-      });
+      diagnostics.push(ruleError(err.range, err.message));
       if (diagnostics.length >= MAX_DIAGNOSTICS) return diagnostics;
     }
 
@@ -83,7 +90,7 @@ export class ValidationProvider {
         if (dir.keyword.value.toLowerCase() !== 'use-server') continue;
         const a = dir.args[0];
         if (a && !definedServers.has(a.value.toLowerCase())) {
-          out.push(error(toRange(a.range),
+          out.push(ruleError(a.range,
             `'${a.value}' is referenced by 'use-server' but no server named '${a.value}' is defined in this section.`));
         }
       }
@@ -117,88 +124,20 @@ export class ValidationProvider {
       const msg = nearestVersion
         ? `Unknown directive '${displayName}'. It may be available since HAProxy ${nearestVersion}.`
         : `Unknown directive '${displayName}'.`;
-      out.push(error(toRange(directive.keyword.range), msg));
+      out.push(ruleError(directive.keyword.range, msg));
       return;
     }
 
-    // Check if directive is deprecated
-    if (this.registry.isDeprecated(def.name, this.version)) {
-      out.push(
-        warning(
-          toRange(directive.keyword.range),
-          `'${def.name}' is deprecated since HAProxy ${def.deprecatedSinceVersion ?? '?'}. ${migrationHint(def.name)}`
-        )
-      );
-    }
-
-    // Check section validity
-    if (!def.sections.includes(section.type)) {
-      out.push(
-        error(
-          toRange(directive.keyword.range),
-          `'${def.name}' is not valid in a '${section.type}' section. Valid sections: ${def.sections.join(', ')}.`
-        )
-      );
-    }
-
-    // Check mode compatibility
-    if (def.httpOnly && section.mode === 'tcp') {
-      out.push(
-        error(
-          toRange(directive.keyword.range),
-          `'${def.name}' requires HTTP mode but this section is in TCP mode.`
-        )
-      );
-    }
-    if (def.tcpOnly && section.mode === 'http') {
-      out.push(
-        error(
-          toRange(directive.keyword.range),
-          `'${def.name}' requires TCP mode but this section is in HTTP mode.`
-        )
-      );
-    }
-
-    // Validate action sub-keyword (e.g. http-request deny, tcp-request connection accept)
-    this.validateAction(directive, def.name, out);
-
-    // Per-directive value rules
-    const ruleContext = { resolvedName: def.name };
-    out.push(...timeoutValueRule(directive, ruleContext));
-    out.push(...portRangeRule(directive, ruleContext));
-  }
-
-  private validateAction(directive: HaproxyDirective, resolvedName: string, out: Diagnostic[]): void {
-    const mapping = ACTION_DIRECTIVE_RULESETS[resolvedName];
-    if (!mapping) return;
-
-    const actionArg = directive.args[mapping.actionArgIdx];
-    if (!actionArg) return; // no action provided — incomplete line, parser will catch it
-
-    const actionName = stripParens(actionArg.value.toLowerCase());
-    const action = ACTIONS.find((a) => a.name === actionName);
-
-    if (!action) {
-      out.push(error(
-        toRange(actionArg.range),
-        `Unknown ${resolvedName} action '${actionArg.value}'.`
-      ));
-      return;
-    }
-
-    if (!action.rulesets[mapping.key]) {
-      out.push(error(
-        toRange(actionArg.range),
-        `'${actionName}' is not a valid action for '${resolvedName}'.`
-      ));
-      return;
-    }
-
-    if (action.deprecated && this.registry.compareVersions(this.version, action.deprecated) >= 0) {
-      out.push(warning(
-        toRange(actionArg.range),
-        `'${actionName}' is deprecated since HAProxy ${action.deprecated}.`
-      ));
+    const context: RuleContext = {
+      resolvedName: def.name,
+      definition: def,
+      sectionType: section.type,
+      sectionMode: section.mode,
+      version: this.version,
+      registry: this.registry,
+    };
+    for (const rule of DIRECTIVE_RULES) {
+      out.push(...rule(directive, context));
     }
   }
 
@@ -209,34 +148,4 @@ export class ValidationProvider {
     }
     return undefined;
   }
-}
-
-/** Strip parenthesised arguments from an action/fetch token: set-var(x) → set-var */
-function stripParens(raw: string): string {
-  const idx = raw.indexOf('(');
-  return idx === -1 ? raw : raw.slice(0, idx);
-}
-
-const MIGRATION_HINTS: Record<string, string> = {
-  reqrep: "Use 'http-request replace-value' instead.",
-  rsprep: "Use 'http-response replace-value' instead.",
-};
-
-function migrationHint(name: string): string {
-  return MIGRATION_HINTS[name] ?? '';
-}
-
-function toRange(r: SourceRange): Range {
-  return {
-    start: { line: r.startLine, character: r.startCharacter },
-    end: { line: r.endLine, character: r.endCharacter },
-  };
-}
-
-function error(range: Range, message: string): Diagnostic {
-  return { severity: DiagnosticSeverity.Error, range, message, source: 'haproxy' };
-}
-
-function warning(range: Range, message: string): Diagnostic {
-  return { severity: DiagnosticSeverity.Warning, range, message, source: 'haproxy' };
 }
