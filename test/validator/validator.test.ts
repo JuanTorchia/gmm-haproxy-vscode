@@ -589,14 +589,14 @@ describe('ValidationProvider', () => {
       expect(diags.filter((d) => d.severity === DiagnosticSeverity.Error)).toHaveLength(0);
     });
 
-    it('errors on reqrep (removed in 2.4)', () => {
+    it('errors on reqrep (removed in 2.1)', () => {
       const d = validate('frontend http\n    reqrep ^Host:\\ (.*) Host:\\ \\1\n', v)
         .filter((diag) => diag.message.includes('reqrep'));
       expect(d.length).toBeGreaterThan(0);
       expect(d[0]?.severity).toBe(DiagnosticSeverity.Error);
     });
 
-    it('errors on rsprep (removed in 2.4)', () => {
+    it('errors on rsprep (removed in 2.1)', () => {
       const d = validate('backend web\n    rsprep ^Server:\\ .* Server:\\ HAProxy\n', v)
         .filter((diag) => diag.message.includes('rsprep'));
       expect(d.length).toBeGreaterThan(0);
@@ -697,7 +697,7 @@ describe('ValidationProvider', () => {
       expect(validate('frontend main\n    use_backend web\nbackend web\n    balance roundrobin\n')).toHaveLength(0);
     });
 
-    it('errors on reqrep (removed since 2.4)', () => {
+    it('errors on reqrep (removed since 2.1)', () => {
       const d = validate('frontend http\n    reqrep ^Host:\\ (.*) Host:\\ \\1\n')
         .filter((diag) => diag.message.includes('reqrep'));
       expect(d.length).toBeGreaterThan(0);

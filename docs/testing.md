@@ -102,7 +102,7 @@ Cover the following scenarios:
 | Valid directive in correct section | No diagnostic |
 | Unknown directive | `Error`: "Unknown directive" |
 | Directive in wrong section | `Error`: "not valid in 'X' section" |
-| Removed directive (e.g. `reqrep` in 2.4) | `Error`: "removed in HAProxy X" |
+| Removed directive (e.g. `reqrep` in 2.4) | `Error`: "was removed in HAProxy X" + migration hint |
 | Deprecated directive | `Warning`: "deprecated since X" |
 | `httpOnly` directive in TCP mode | `Error`: "requires HTTP mode" |
 | `tcpOnly` directive in HTTP mode | `Error`: "requires TCP mode" |

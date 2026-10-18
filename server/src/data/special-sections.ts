@@ -21,6 +21,7 @@ export interface SpecialSectionDef {
   readonly since: string;
   readonly deprecated?: string;
   readonly removed?: string;
+  readonly migration?: string;
   readonly docsUrl?: string;
 }
 

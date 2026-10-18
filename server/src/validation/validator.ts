@@ -119,14 +119,7 @@ export class ValidationProvider {
       this.registry.getDirective(kwName, this.version);
 
     if (!def) {
-      const nearestVersion =
-        (combinedName ? this.findSinceVersion(combinedName) : undefined) ??
-        this.findSinceVersion(kwName);
-      const displayName = combinedName ?? kwName;
-      const msg = nearestVersion
-        ? `Unknown directive '${displayName}'. It may be available since HAProxy ${nearestVersion}.`
-        : `Unknown directive '${displayName}'.`;
-      out.push(ruleError(directive.keyword.range, msg));
+      out.push(ruleError(directive.keyword.range, this.unresolvedMessage(kwName, combinedName)));
       return;
     }
 
@@ -141,6 +134,37 @@ export class ValidationProvider {
     for (const rule of DIRECTIVE_RULES) {
       out.push(...rule(directive, context));
     }
+  }
+
+  /** Explains why a directive did not resolve: removed, not yet available, or unknown. */
+  private unresolvedMessage(kwName: string, combinedName: string | null): string {
+    const removed =
+      (combinedName ? this.registry.getRemovedDirective(combinedName, this.version) : undefined) ??
+      this.registry.getRemovedDirective(kwName, this.version);
+    if (removed) {
+      const message =
+        `'${removed.name}' was removed in HAProxy ${removed.removedInVersion} ` +
+        `and is not accepted by HAProxy ${this.version}.`;
+      return removed.migration ? `${message} ${removed.migration}` : message;
+    }
+
+    const combinedSince = combinedName ? this.findSinceVersion(combinedName) : undefined;
+    const nearestVersion = combinedSince ?? this.findSinceVersion(kwName);
+    // Only show the two-word form when it names a real directive family
+    // (`option foo`); otherwise the second word is just an argument.
+    const useCombined = combinedName !== null && (combinedSince !== undefined || this.hasCombinedNames(kwName));
+    const displayName = useCombined ? combinedName : kwName;
+    return nearestVersion
+      ? `Unknown directive '${displayName}'. It may be available since HAProxy ${nearestVersion}.`
+      : `Unknown directive '${displayName}'.`;
+  }
+
+  private hasCombinedNames(kwName: string): boolean {
+    const prefix = `${kwName} `;
+    for (const name of this.registry.getDirectives(this.version).keys()) {
+      if (name.startsWith(prefix)) return true;
+    }
+    return false;
   }
 
   private findSinceVersion(name: string): string | undefined {

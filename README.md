@@ -46,7 +46,7 @@ Context-aware suggestions that know which directives are valid in each section. 
 ---
 
 ### Version-Aware Validation
-Select your HAProxy version and get real-time diagnostics tailored to it. Directives removed in 2.4? Flagged as errors. Options deprecated in 3.0? Flagged as warnings — with the exact migration path.
+Select your HAProxy version and get real-time diagnostics tailored to it. Directives HAProxy no longer accepts, like `reqrep`? Flagged as errors. Options deprecated in 3.0? Flagged as warnings — with the exact migration path.
 
 - **Errors** — unknown directives, wrong section, removed features, syntax issues
 - **Warnings** — deprecated directives with upgrade hints

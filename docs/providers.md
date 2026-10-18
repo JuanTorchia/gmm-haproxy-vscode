@@ -41,7 +41,7 @@ All messages follow the pattern: *what is wrong* + *how to fix it*.
 | Check | Severity | Example message |
 |-------|----------|-----------------|
 | Unknown directive | Error | `Unknown directive 'reqtimeout'. It may be available since HAProxy 2.4.` |
-| Removed directive | Error | `'reqrep' was removed in HAProxy 2.4. Use 'http-request replace-value' instead.` |
+| Removed directive | Error | `'reqrep' was removed in HAProxy 2.1 and is not accepted by HAProxy 3.2. Use 'http-request replace-header', 'replace-path' or 'replace-uri' instead.` |
 | Deprecated | Warning | `'redispatch' is deprecated since HAProxy 2.4. Use 'option redispatch' instead.` |
 | Wrong section | Error | `'use_backend' is not valid in a 'backend' section. Valid sections: defaults, frontend, listen.` |
 | HTTP-only in TCP | Error | `'option httplog' requires HTTP mode but this section is in TCP mode.` |

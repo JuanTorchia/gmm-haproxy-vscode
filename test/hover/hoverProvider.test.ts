@@ -58,7 +58,7 @@ describe('HoverProvider — directive keywords', () => {
   });
 
   it('shows deprecated warning for deprecated directive', () => {
-    // reqrep was removed in 2.4 — test on 2.4 version
+    // reqrep was removed in 2.1 — test on 2.4 version
     const text = 'frontend http\n    option httplog\n';
     const result = hover(text, 1, 8, '3.1');
     const content = md(result);
