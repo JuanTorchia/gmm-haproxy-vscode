@@ -12,7 +12,6 @@ docs/**
 out/**
 .claude/**
 scripts/**
-.eslintrc.json
 eslint.config.js
 tsconfig*.json
 jest.config.js
