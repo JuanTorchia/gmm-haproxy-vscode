@@ -2,12 +2,6 @@ import { Diagnostic } from 'vscode-languageserver/node';
 import { HaproxyDirective } from '../../parser/ast';
 import { RuleContext, ruleWarning } from './shared';
 
-/** Replacement to suggest for a deprecated directive, keyed by resolved name. */
-const MIGRATION_HINTS: Record<string, string> = {
-  reqrep: "Use 'http-request replace-value' instead.",
-  rsprep: "Use 'http-response replace-value' instead.",
-};
-
 /**
  * Warns when a directive is deprecated in the selected HAProxy version.
  *
@@ -19,11 +13,6 @@ export function deprecationRule(directive: HaproxyDirective, context: RuleContex
   const { definition, registry, version } = context;
   if (!registry.isDeprecated(definition.name, version)) return [];
 
-  const hint = MIGRATION_HINTS[definition.name] ?? '';
-  return [
-    ruleWarning(
-      directive.keyword.range,
-      `'${definition.name}' is deprecated since HAProxy ${definition.deprecatedSinceVersion ?? '?'}. ${hint}`
-    ),
-  ];
+  const message = `'${definition.name}' is deprecated since HAProxy ${definition.deprecatedSinceVersion ?? '?'}.`;
+  return [ruleWarning(directive.keyword.range, definition.migration ? `${message} ${definition.migration}` : message)];
 }

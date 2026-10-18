@@ -13,6 +13,8 @@ export interface DirectiveDefinition {
   readonly sinceVersion: string;
   readonly deprecatedSinceVersion?: string;
   readonly removedInVersion?: string;
+  /** What to use instead, when deprecated or removed. */
+  readonly migration?: string;
   readonly docsUrl?: string;
   readonly tcpOnly?: boolean;
   readonly httpOnly?: boolean;
@@ -24,6 +26,13 @@ export interface DirectiveDefinition {
   readonly maxArgs?: number;
   /** Human-readable names of the required arguments, used in diagnostics. */
   readonly requiredArgs?: readonly string[];
+}
+
+/** A directive that is no longer accepted by the selected HAProxy version. */
+export interface RemovedDirective {
+  readonly name: string;
+  readonly removedInVersion: string;
+  readonly migration?: string;
 }
 
 /** Ordered list of known versions from oldest to newest. */
@@ -69,6 +78,7 @@ export class VersionRegistry {
         sinceVersion: d.since,
         deprecatedSinceVersion: d.deprecated,
         removedInVersion: d.removed,
+        migration: d.migration,
         docsUrl: d.docsUrl,
         httpOnly: d.httpOnly,
         tcpOnly: d.tcpOnly,
@@ -117,6 +127,7 @@ export class VersionRegistry {
           sinceVersion: d.since,
           deprecatedSinceVersion: d.deprecated,
           removedInVersion: d.removed,
+          migration: d.migration,
           docsUrl: d.docsUrl,
         });
       }
@@ -129,6 +140,24 @@ export class VersionRegistry {
   /** Returns a single directive by name for a given version, or undefined. */
   getDirective(name: string, version: string): DirectiveDefinition | undefined {
     return this.getDirectives(version).get(name.toLowerCase());
+  }
+
+  /**
+   * Looks up a directive that existed in an earlier HAProxy release but is
+   * removed in this version, so callers can report it as removed rather than unknown.
+   *
+   * @param name - Directive name, case-insensitive.
+   * @param version - HAProxy version to check against.
+   * @returns The removal version and migration hint, or undefined if the name was never removed.
+   */
+  getRemovedDirective(name: string, version: string): RemovedDirective | undefined {
+    const resolved = this.resolveVersion(version);
+    const key = name.toLowerCase();
+    const match = [...DIRECTIVES, ...GLOBAL_DIRECTIVES, ...SPECIAL_SECTION_DIRECTIVES].find(
+      (d) => d.name.toLowerCase() === key && d.removed && this.compareVersions(resolved, d.removed) >= 0
+    );
+    if (!match?.removed) return undefined;
+    return { name: match.name, removedInVersion: match.removed, migration: match.migration };
   }
 
   /** True if the directive exists and is not removed in this version. */

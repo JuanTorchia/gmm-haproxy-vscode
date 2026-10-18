@@ -48,7 +48,7 @@ const def = registry.getDirective('balance', '3.1');
 Returns `true` if the directive exists and is not removed in this version.
 
 ```typescript
-registry.isAvailable('reqrep', '2.4'); // false — removed in 2.4
+registry.isAvailable('reqrep', '2.4'); // false — removed in 2.1
 registry.isAvailable('balance', '2.4'); // true
 ```
 

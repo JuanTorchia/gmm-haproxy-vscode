@@ -25,6 +25,8 @@ export interface DirectiveDef {
   readonly deprecated?: string;
   /** HAProxy version when this directive was removed (errors out). */
   readonly removed?: string;
+  /** What to use instead, shown when the directive is deprecated or removed. */
+  readonly migration?: string;
   /** Only valid when section mode is http. */
   readonly httpOnly?: true;
   /** Only valid when section mode is tcp. */
