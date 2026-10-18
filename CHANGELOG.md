@@ -8,6 +8,22 @@ See [docs/release.md](docs/release.md) for changelog and release-note rules.
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-10-18
+
+### Added
+- Missing-argument validation: `bind`, `server`, `server-template`, `balance`, `use_backend`, `default_backend`, `use-server`, `acl`, `cookie`, `log`, `errorfile`, `mode`, `retries`, `maxconn`, `fullconn` and `stats uri` are reported as errors when a required argument is missing, naming what is missing (e.g. `'server' requires a name and an address; missing: an address`). Fixed-arity directives such as `mode` and `default_backend` also flag extra arguments. Lines that use environment variables are not checked, and other directives are never flagged (#79).
+
+### Changed
+- Removed directives such as `reqrep`, `rspadd` or `reqsetbe` are now reported as removed, with the HAProxy version that removed them and what to use instead — e.g. `'reqrep' was removed in HAProxy 2.1 and is not accepted by HAProxy 3.2. Use 'http-request replace-header', 'replace-path' or 'replace-uri' instead.`
+
+### Fixed
+- Unknown-directive errors no longer glue the first argument onto the directive name (`Unknown directive 'reqrep ^host:\'`); the two-word form is kept only for real combined names such as `option`.
+- The `req*`/`rsp*` directive family is documented as removed in HAProxy 2.1, not 2.4.
+- The language server cancels pending validations and releases its document state on shutdown, avoiding stray diagnostics after `HAProxy: Restart Language Server` (#75).
+
+### Security
+- The extension package shrank from 63 files / 4.7 MB to 10 files / 265 KB: no lockfiles, contributor docs, images, source maps or stale compiler output are shipped, and the pre-publish check now rejects any file outside an explicit allowlist or above file-count and size ceilings (#68, #69, #70).
+
 ## [0.6.1] — 2026-10-11
 
 ### Changed
