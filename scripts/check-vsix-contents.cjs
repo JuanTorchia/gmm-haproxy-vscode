@@ -1,6 +1,37 @@
 #!/usr/bin/env node
 
 const { execFileSync, execSync } = require('node:child_process');
+const { statSync } = require('node:fs');
+const path = require('node:path');
+
+const repoRoot = path.resolve(__dirname, '..');
+
+// The intended package shape. Entries ending in `/` allow any file below that
+// directory; every other entry must match a packaged path exactly. Anything
+// outside this list is a packaging regression, not a candidate for review.
+const allowedEntries = [
+  'package.json',
+  'README.md',
+  'CHANGELOG.md',
+  'LICENSE',
+  'ROADMAP.md',
+  'SECURITY.md',
+  'SUPPORT.md',
+  'GOOD_FIRST_ISSUES.md',
+  'language-configuration.json',
+  'images/',
+  'syntaxes/',
+  'snippets/',
+  'client/package.json',
+  'client/out/extension.js',
+  'server/package.json',
+  'server/out/server.js',
+];
+
+// Ceilings set from the clean package (17 files, ~1.65 MiB unpacked). Raising
+// either one must be a deliberate change in the same PR that grows the package.
+const maxFileCount = 17;
+const maxTotalBytes = 2 * 1024 * 1024;
 
 // Keep this list intentionally conservative. If a file matches one of these
 // patterns, publishing should stop until `.vscodeignore` excludes it.
@@ -58,21 +89,68 @@ function findForbiddenFiles(filePaths) {
   });
 }
 
+function isAllowed(filePath) {
+  const normalizedPath = filePath.replace(/\\/g, '/');
+  return allowedEntries.some((entry) =>
+    entry.endsWith('/') ? normalizedPath.startsWith(entry) : normalizedPath === entry,
+  );
+}
+
+function totalSizeInBytes(filePaths) {
+  return filePaths.reduce((sum, filePath) => sum + statSync(path.join(repoRoot, filePath)).size, 0);
+}
+
+function findShapeProblems(filePaths) {
+  const problems = filePaths
+    .filter((filePath) => !isAllowed(filePath))
+    .map((filePath) => `not in the package allowlist: ${filePath}`);
+
+  if (filePaths.length > maxFileCount) {
+    problems.push(`package has ${filePaths.length} files, ceiling is ${maxFileCount}`);
+  }
+
+  const totalBytes = totalSizeInBytes(filePaths);
+  if (totalBytes > maxTotalBytes) {
+    problems.push(`package is ${totalBytes} bytes unpacked, ceiling is ${maxTotalBytes}`);
+  }
+
+  return problems;
+}
+
+function failWith(heading, items, hint) {
+  console.error(heading);
+  for (const item of items) {
+    console.error(`- ${item}`);
+  }
+  console.error(hint);
+  process.exit(1);
+}
+
 function main() {
   const packageContents = listPackageContents();
   const filePaths = extractFilePaths(packageContents);
   const forbiddenFiles = findForbiddenFiles(filePaths);
 
   if (forbiddenFiles.length > 0) {
-    console.error('Forbidden files were found in the VS Code extension package:');
-    for (const filePath of forbiddenFiles) {
-      console.error(`- ${filePath}`);
-    }
-    console.error('Update .vscodeignore before publishing.');
-    process.exit(1);
+    failWith(
+      'Forbidden files were found in the VS Code extension package:',
+      forbiddenFiles,
+      'Update .vscodeignore before publishing.',
+    );
   }
 
-  console.log(`VS Code package contents check passed (${filePaths.length} files inspected).`);
+  const shapeProblems = findShapeProblems(filePaths);
+  if (shapeProblems.length > 0) {
+    failWith(
+      'The VS Code extension package does not match its intended shape:',
+      shapeProblems,
+      'Update .vscodeignore, or update allowedEntries / ceilings in scripts/check-vsix-contents.cjs deliberately.',
+    );
+  }
+
+  console.log(
+    `VS Code package contents check passed (${filePaths.length} files, ${totalSizeInBytes(filePaths)} bytes inspected).`,
+  );
 }
 
 if (require.main === module) {
