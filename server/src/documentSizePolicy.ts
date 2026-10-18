@@ -44,4 +44,13 @@ export class OversizedDocumentTracker {
   delete(uri: string): void {
     this.skippedUris.delete(uri);
   }
+
+  /**
+   * Remove tracking state for every document.
+   *
+   * @returns Nothing.
+   */
+  clear(): void {
+    this.skippedUris.clear();
+  }
 }
