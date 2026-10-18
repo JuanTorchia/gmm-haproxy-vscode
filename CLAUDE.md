@@ -77,14 +77,21 @@ gmm-haproxy-vscode/
 │   │   ├── server.ts              # LSP wiring only: handlers, AST cache, debounce
 │   │   ├── settings.ts            # ServerSettings + parseServerSettings
 │   │   ├── documentSizePolicy.ts  # oversized-document gating (see PART V, Rule 8)
+│   │   ├── documentState.ts       # AST cache, debounce timers, shutdown cleanup
+│   │   ├── configPresence.ts
 │   │   ├── parser/
 │   │   │   ├── parser.ts          # tokenizer + AST construction
 │   │   │   └── ast.ts             # readonly node types
 │   │   ├── validation/
-│   │   │   ├── validator.ts       # composes rules, owns directive resolution
+│   │   │   ├── validator.ts       # composes rules, owns directive resolution + EOL warning
 │   │   │   ├── validatorCrossRef.ts
-│   │   │   └── rules/             # one file per value rule (Strategy pattern)
+│   │   │   └── rules/             # one file per rule (Strategy pattern)
+│   │   │       ├── actionRule.ts
+│   │   │       ├── arityRule.ts
+│   │   │       ├── deprecationRule.ts
+│   │   │       ├── modeRule.ts
 │   │   │       ├── portRule.ts
+│   │   │       ├── sectionRule.ts
 │   │   │       ├── timeoutRule.ts
 │   │   │       └── shared.ts      # RuleContext, ruleError, ruleWarning
 │   │   ├── completion/
@@ -92,7 +99,8 @@ gmm-haproxy-vscode/
 │   │   │   ├── completionContext.ts
 │   │   │   └── completionItems.ts
 │   │   ├── hover/
-│   │   │   └── hoverProvider.ts
+│   │   │   ├── hoverProvider.ts   # target detection + definition lookup
+│   │   │   └── hoverContent.ts    # Markdown rendering
 │   │   ├── formatting/
 │   │   │   └── formatter.ts
 │   │   ├── symbols/
@@ -128,7 +136,8 @@ gmm-haproxy-vscode/
 ├── snippets/
 │   └── haproxy.json
 ├── scripts/
-│   ├── check-vsix-contents.cjs    # pre-publish package guard
+│   ├── check-vsix-contents.cjs    # pre-publish package guard (allowlist, file/size ceilings)
+│   ├── check-vscode-types.cjs     # @types/vscode must equal the engines.vscode floor
 │   └── generate-demo-gifs.cjs
 ├── docs/                          # contributor docs, demo configs, README assets
 ├── .github/
@@ -563,15 +572,16 @@ if a rule ships with a different severity than documented here, one of the two i
 | Rule | Severity | Implemented in |
 |---|---|---|
 | Unknown directive in any section | Error | `validator.ts` |
-| Directive used in wrong section (e.g. `use_backend` in `backend`) | Error | `validator.ts` |
+| Directive used in wrong section (e.g. `use_backend` in `backend`) | Error | `rules/sectionRule.ts` |
 | Directive not yet available in selected version | Error — "may be available since X" | `validator.ts` |
-| Directive deprecated in selected version | Warning + migration hint | `validator.ts` |
-| Unknown action sub-keyword (e.g. `http-request <action>`) | Error | `validator.ts` |
-| `mode tcp` + HTTP-only directive in same section | Error | `validator.ts` |
-| `mode http` + TCP-only directive in same section | Error | `validator.ts` |
+| Directive deprecated in selected version | Warning + migration hint | `rules/deprecationRule.ts` |
+| Unknown action sub-keyword (e.g. `http-request <action>`) | Error | `rules/actionRule.ts` |
+| `mode tcp` + HTTP-only directive in same section | Error | `rules/modeRule.ts` |
+| `mode http` + TCP-only directive in same section | Error | `rules/modeRule.ts` |
 | Timeout value HAProxy cannot parse | Error | `rules/timeoutRule.ts` |
 | Timeout value written without a unit (`timeout connect 5` = 5 ms) | **Warning** | `rules/timeoutRule.ts` |
 | Port out of range (< 1 or > 65535) | Error | `rules/portRule.ts` |
+| Missing required argument / too many arguments (annotated directives only) | Error | `rules/arityRule.ts` |
 | `use_backend` / `default_backend` references an undefined name | Warning | `validatorCrossRef.ts` |
 | Selected HAProxy version has reached end of life | Warning | `validator.ts` |
 
@@ -580,10 +590,10 @@ fine, it just means 5 milliseconds rather than the 5 seconds the author almost c
 config that HAProxy accepts would break Rule 3 in PART V — severity has to track "will this load?", and the
 message carries the real intent.
 
-### Not yet implemented
-- **Missing required argument → Error.** There is no argument-count validation anywhere in the validator today.
-  This remains a requirement, not a description: `DirectiveDefinition` has no arity field to check against, so
-  implementing it means extending the data model first.
+Arity is checked only for directives annotated with `minArgs` / `maxArgs` in `data/`, and only in proxy and
+global sections. An unannotated directive is never checked — a false "missing argument" on a valid production
+config is worse than silence, so annotate only where the count is unambiguous. Lines containing an environment
+reference (`$`) are skipped because the expansion may yield zero or several words.
 
 ## HAProxy Versions to Support
 Source of truth: `KNOWN_VERSIONS` and `VERSION_EOL` in `server/src/registry/versionRegistry.ts`.
