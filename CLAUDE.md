@@ -78,9 +78,11 @@ gmm-haproxy-vscode/
 │   │   ├── settings.ts            # ServerSettings + parseServerSettings
 │   │   ├── documentSizePolicy.ts  # oversized-document gating (see PART V, Rule 8)
 │   │   ├── documentState.ts       # AST cache, debounce timers, shutdown cleanup
+│   │   ├── documentPipeline.ts    # parse + debounced validation + oversized gating
 │   │   ├── configPresence.ts
 │   │   ├── parser/
-│   │   │   ├── parser.ts          # tokenizer + AST construction
+│   │   │   ├── parser.ts          # AST construction (sections, directives, mode)
+│   │   │   ├── tokenizer.ts       # comments, continuations, quoting, token ranges
 │   │   │   └── ast.ts             # readonly node types
 │   │   ├── validation/
 │   │   │   ├── validator.ts       # composes rules, owns directive resolution + EOL warning
