@@ -8,20 +8,13 @@ import {
   DirectiveArg,
   ParseError,
 } from './ast';
+import { LogicalLineSegment, makeRange, readLogicalLine, tokenizeSegments } from './tokenizer';
 
 const SECTION_KEYWORDS = new Set<string>([
   'global', 'defaults', 'frontend', 'backend', 'listen',
   'userlist', 'peers', 'resolvers', 'mailers', 'ring',
   'log-forward', 'program', 'http-errors', 'cache', 'acme',
 ]);
-
-/** Physical source segment that contributes tokens to one logical continued directive. */
-interface LogicalLineSegment {
-  readonly text: string;
-  readonly lineIndex: number;
-  readonly startOffset: number;
-  readonly rawLine: string;
-}
 
 /**
  * Fault-tolerant HAProxy config parser.
@@ -36,37 +29,13 @@ export class HaproxyParser {
     let currentSection: SectionBuilder | null = null;
 
     for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-      const rawLine = lines[lineIndex] ?? '';
-      const line = stripComment(rawLine);
-      const trimmed = line.trim();
-      const indentLength = line.length - line.trimStart().length;
+      const logicalLine = readLogicalLine(lines, lineIndex);
+      if (!logicalLine) continue;
 
-      if (trimmed === '') continue;
-
-      // Handle line continuation (backslash at end)
       const startLineIndex = lineIndex;
-      const segments: LogicalLineSegment[] = [
-        {
-          text: trimContinuationMarker(trimmed),
-          lineIndex,
-          startOffset: indentLength,
-          rawLine,
-        },
-      ];
-      let continuedLine = trimmed;
-      while (continuedLine.endsWith('\\') && lineIndex + 1 < lines.length) {
-        lineIndex++;
-        const nextRaw = lines[lineIndex] ?? '';
-        const nextLine = stripComment(nextRaw);
-        const nextTrimmed = nextLine.trim();
-        segments.push({
-          text: trimContinuationMarker(nextTrimmed),
-          lineIndex,
-          startOffset: nextLine.length - nextLine.trimStart().length,
-          rawLine: nextRaw,
-        });
-        continuedLine = nextTrimmed;
-      }
+      const { segments } = logicalLine;
+      const rawLine = segments[0]?.rawLine ?? '';
+      lineIndex = logicalLine.endLineIndex;
 
       const tokens = tokenizeSegments(segments);
       if (tokens.length === 0) continue;
@@ -214,81 +183,4 @@ function buildDirective(
     range: makeRange(startLine, 0, endLine, endChar),
     raw: firstSegment?.rawLine ?? '',
   };
-}
-
-function trimContinuationMarker(line: string): string {
-  return line.endsWith('\\') ? line.slice(0, -1).trimEnd() : line;
-}
-
-function stripComment(line: string): string {
-  let inQuote = false;
-  let quoteChar = '';
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (!ch) continue;
-    if (inQuote) {
-      if (ch === '\\') { i++; continue; }
-      if (ch === quoteChar) inQuote = false;
-    } else {
-      if (ch === '"' || ch === "'") { inQuote = true; quoteChar = ch; }
-      else if (ch === '#') return line.slice(0, i);
-    }
-  }
-  return line;
-}
-
-function tokenizeSegments(segments: readonly LogicalLineSegment[]): Token[] {
-  const tokens: Token[] = [];
-
-  for (const segment of segments) {
-    const line = segment.text;
-    let i = 0;
-
-    while (i < line.length) {
-      while (i < line.length && /\s/.test(line[i] ?? '')) i++;
-      if (i >= line.length) break;
-
-      const start = i + segment.startOffset;
-      let value = '';
-
-      if (line[i] === '"' || line[i] === "'") {
-        const quoteChar = line[i];
-        i++;
-        while (i < line.length && line[i] !== quoteChar) {
-          if (line[i] === '\\') i++;
-          value += line[i] ?? '';
-          i++;
-        }
-        i++; // closing quote
-      } else {
-        while (i < line.length && !/\s/.test(line[i] ?? '')) {
-          value += line[i] ?? '';
-          i++;
-        }
-      }
-
-      if (value !== '') {
-        tokens.push({
-          value,
-          range: makeRange(
-            segment.lineIndex,
-            start,
-            segment.lineIndex,
-            i + segment.startOffset
-          ),
-        });
-      }
-    }
-  }
-
-  return tokens;
-}
-
-function makeRange(
-  startLine: number,
-  startCharacter: number,
-  endLine: number,
-  endCharacter: number
-): SourceRange {
-  return { startLine, startCharacter, endLine, endCharacter };
 }

@@ -28,8 +28,6 @@ import {
   PrepareRenameParams,
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { HaproxyParser } from './parser/parser';
-import { ValidationProvider } from './validation/validator';
 import { CompletionProvider } from './completion/completionProvider';
 import { HoverProvider } from './hover/hoverProvider';
 import { FormattingProvider } from './formatting/formatter';
@@ -42,22 +40,20 @@ import { ServerSettings, DEFAULT_SETTINGS, parseServerSettings } from './setting
 import { DocumentHighlightProvider } from './highlights/documentHighlightProvider';
 import { ReferencesProvider } from './references/referencesProvider';
 import { RenameProvider } from './rename/renameProvider';
-import { MAX_VALIDATION_LINE_COUNT, shouldSkipValidationForLineCount } from './documentSizePolicy';
 import { DocumentState } from './documentState';
-import { hasConfigSections } from './configPresence';
+import { DocumentPipeline } from './documentPipeline';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments<TextDocument>(TextDocument);
 
-const VALIDATION_DEBOUNCE_MS = 400;
-
 const documentState = new DocumentState();
 const astCache = documentState.astCache;
-const oversizedDocuments = documentState.oversizedDocuments;
 
 let settings: ServerSettings = { ...DEFAULT_SETTINGS };
 let registry: VersionRegistry;
 let hasConfigurationCapability = false;
+
+const pipeline = new DocumentPipeline(connection, documentState, () => ({ settings, registry }));
 
 connection.onInitialize((params: InitializeParams): InitializeResult => {
   hasConfigurationCapability = !!(
@@ -95,24 +91,13 @@ connection.onInitialized(() => {
 
 connection.onDidChangeConfiguration(() => {
   void refreshSettings().then(() => {
-    documents.all().forEach((doc) => {
-      if (handleOversizedDocument(doc)) return;
-      scheduleValidation(doc);
-    });
+    documents.all().forEach((doc) => pipeline.revalidate(doc));
   });
 });
 
-documents.onDidOpen((event) => {
-  if (handleOversizedDocument(event.document)) return;
-  parseDocument(event.document);
-  scheduleValidation(event.document);
-});
+documents.onDidOpen((event) => pipeline.refresh(event.document));
 
-documents.onDidChangeContent((event) => {
-  if (handleOversizedDocument(event.document)) return;
-  parseDocument(event.document);
-  scheduleValidation(event.document);
-});
+documents.onDidChangeContent((event) => pipeline.refresh(event.document));
 
 documents.onDidClose((event) => {
   documentState.release(event.document.uri);
@@ -205,41 +190,6 @@ connection.onDocumentFormatting((params: DocumentFormattingParams): TextEdit[] =
   return provider.format(doc, params.options);
 });
 
-function parseDocument(doc: TextDocument): void {
-  if (isOversizedDocument(doc)) {
-    astCache.delete(doc.uri);
-    return;
-  }
-  const parser = new HaproxyParser();
-  const ast = parser.parse(doc.getText(), doc.uri);
-  astCache.set(doc.uri, ast);
-}
-
-function scheduleValidation(doc: TextDocument): void {
-  if (isOversizedDocument(doc)) {
-    documentState.clearPendingValidation(doc.uri);
-    return;
-  }
-  documentState.scheduleValidation(doc.uri, VALIDATION_DEBOUNCE_MS, () => validateDocument(doc));
-}
-
-function validateDocument(doc: TextDocument): void {
-  if (handleOversizedDocument(doc)) return;
-  if (!settings.validationEnabled) {
-    void connection.sendDiagnostics({ uri: doc.uri, diagnostics: [] });
-    return;
-  }
-  const ast = astCache.get(doc.uri);
-  if (!ast) return;
-  if (!hasConfigSections(ast, doc.getText())) {
-    void connection.sendDiagnostics({ uri: doc.uri, diagnostics: [] });
-    return;
-  }
-  const validator = new ValidationProvider(registry, settings.version);
-  const diagnostics = validator.validate(ast);
-  void connection.sendDiagnostics({ uri: doc.uri, diagnostics });
-}
-
 async function refreshSettings(): Promise<void> {
   if (!hasConfigurationCapability) return;
   try {
@@ -248,29 +198,6 @@ async function refreshSettings(): Promise<void> {
   } catch {
     connection.console.error('Failed to retrieve HAProxy settings, using defaults.');
   }
-}
-
-function handleOversizedDocument(doc: TextDocument): boolean {
-  if (!isOversizedDocument(doc)) {
-    oversizedDocuments.markAllowed(doc.uri);
-    return false;
-  }
-
-  astCache.delete(doc.uri);
-  documentState.clearPendingValidation(doc.uri);
-  void connection.sendDiagnostics({ uri: doc.uri, diagnostics: [] });
-
-  if (oversizedDocuments.markSkipped(doc.uri)) {
-    void connection.window.showInformationMessage(
-      `HAProxy diagnostics skipped for this file because it has ${doc.lineCount} lines, above the ${MAX_VALIDATION_LINE_COUNT} line limit. Syntax highlighting remains active.`
-    );
-  }
-
-  return true;
-}
-
-function isOversizedDocument(doc: TextDocument): boolean {
-  return shouldSkipValidationForLineCount(doc.lineCount);
 }
 
 documents.listen(connection);
