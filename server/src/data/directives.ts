@@ -15,6 +15,8 @@ export const DIRECTIVES: DirectiveDef[] = [
   {
     name: 'acl',
     signature: 'acl <name> <criterion> [flags] [operator] [<value>] ...',
+    minArgs: 2,
+    requiredArgs: ['a name', 'a criterion'],
     description: 'Define an Access Control List for use in conditional rules.',
     sections: ALL_PROXY,
     since: '1.2',
@@ -36,6 +38,8 @@ export const DIRECTIVES: DirectiveDef[] = [
   {
     name: 'balance',
     signature: 'balance <algorithm> [<arguments>]',
+    minArgs: 1,
+    requiredArgs: ['an algorithm'],
     description: 'Define the load balancing algorithm used in a backend.',
     sections: DLB,
     since: '1.0',
@@ -56,6 +60,8 @@ export const DIRECTIVES: DirectiveDef[] = [
   {
     name: 'bind',
     signature: 'bind [<address>]:<port_range> [param*]',
+    minArgs: 1,
+    requiredArgs: ['an address'],
     description: 'Define one or several listening addresses and/or ports in a frontend.',
     sections: FL,
     since: '1.0',
@@ -115,6 +121,8 @@ export const DIRECTIVES: DirectiveDef[] = [
   {
     name: 'cookie',
     signature: 'cookie <name> [ rewrite | insert | prefix ] [indirect] [nocache] [postonly] [preserve] [httponly] [secure] [domain <domain>] [maxidle <idle>] [maxlife <life>] [dynamic] [attr <value>]',
+    minArgs: 1,
+    requiredArgs: ['a cookie name'],
     description: 'Enable cookie-based session persistence.',
     sections: DLB,
     since: '1.0',
@@ -137,6 +145,9 @@ export const DIRECTIVES: DirectiveDef[] = [
   {
     name: 'default_backend',
     signature: 'default_backend <backend>',
+    minArgs: 1,
+    maxArgs: 1,
+    requiredArgs: ['a backend name'],
     description: 'Specify the backend to use when no use_backend rule matches.',
     sections: DFL,
     since: '1.2',
@@ -176,6 +187,8 @@ export const DIRECTIVES: DirectiveDef[] = [
   {
     name: 'errorfile',
     signature: 'errorfile <code> <file>',
+    minArgs: 2,
+    requiredArgs: ['a status code', 'a file path'],
     description: 'Return a file content as an HTTP error response for a given status code.',
     sections: ALL_PROXY,
     since: '1.4',
@@ -261,6 +274,9 @@ export const DIRECTIVES: DirectiveDef[] = [
   {
     name: 'fullconn',
     signature: 'fullconn <conns>',
+    minArgs: 1,
+    maxArgs: 1,
+    requiredArgs: ['a connection count'],
     description: 'Set the threshold at which a server is considered at full capacity.',
     sections: { defaults: true, frontend: false, listen: true, backend: true },
     since: '1.2',
@@ -400,6 +416,8 @@ export const DIRECTIVES: DirectiveDef[] = [
   {
     name: 'log',
     signature: 'log global | log <address> [len <len>] [format <fmt>] <facility> [max level [min level]]',
+    minArgs: 1,
+    requiredArgs: ["an address or 'global'"],
     description: 'Enable logging to a syslog server or inherit global log settings.',
     sections: ALL_PROXY,
     since: '1.0',
@@ -436,6 +454,9 @@ export const DIRECTIVES: DirectiveDef[] = [
   {
     name: 'maxconn',
     signature: 'maxconn <conns>',
+    minArgs: 1,
+    maxArgs: 1,
+    requiredArgs: ['a connection count'],
     description: 'Set the maximum number of concurrent connections for a frontend.',
     sections: DFL,
     since: '1.0',
@@ -446,6 +467,9 @@ export const DIRECTIVES: DirectiveDef[] = [
   {
     name: 'mode',
     signature: 'mode { tcp | http | log }',
+    minArgs: 1,
+    maxArgs: 1,
+    requiredArgs: ['a mode (tcp, http or log)'],
     description: 'Set the operating mode: tcp (layer 4) or http (layer 7) or log.',
     sections: ALL_PROXY,
     since: '1.0',
@@ -960,6 +984,9 @@ export const DIRECTIVES: DirectiveDef[] = [
   {
     name: 'retries',
     signature: 'retries <count>',
+    minArgs: 1,
+    maxArgs: 1,
+    requiredArgs: ['a retry count'],
     description: 'Set the number of retries on connection failure to a server.',
     sections: DLB,
     since: '1.0',
@@ -981,6 +1008,8 @@ export const DIRECTIVES: DirectiveDef[] = [
   {
     name: 'server',
     signature: 'server <name> <address>[:<port>] [param*]',
+    minArgs: 2,
+    requiredArgs: ['a name', 'an address'],
     description: 'Define a backend server with optional health check and SSL parameters.',
     sections: LB,
     since: '1.0',
@@ -990,6 +1019,8 @@ export const DIRECTIVES: DirectiveDef[] = [
   {
     name: 'server-template',
     signature: 'server-template <prefix> <num | num-num> <address>[:<port>] [param*]',
+    minArgs: 3,
+    requiredArgs: ['a name prefix', 'a server count or range', 'an address'],
     description: 'Define a range of similar backend servers with a common prefix.',
     sections: LB,
     since: '1.8',
@@ -1018,6 +1049,8 @@ export const DIRECTIVES: DirectiveDef[] = [
   {
     name: 'stats uri',
     signature: 'stats uri <prefix>',
+    minArgs: 1,
+    requiredArgs: ['a URI prefix'],
     description: 'Set the URI prefix to access the stats page.',
     sections: ALL_PROXY,
     since: '1.3',
@@ -1373,6 +1406,8 @@ export const DIRECTIVES: DirectiveDef[] = [
   {
     name: 'use_backend',
     signature: 'use_backend <backend> [{ if | unless } <condition>]',
+    minArgs: 1,
+    requiredArgs: ['a backend name'],
     description: 'Switch to a specific backend if the condition is true.',
     sections: FL,
     since: '1.2',
@@ -1382,6 +1417,8 @@ export const DIRECTIVES: DirectiveDef[] = [
   {
     name: 'use-server',
     signature: 'use-server <server> [{ if | unless } <condition>]',
+    minArgs: 1,
+    requiredArgs: ['a server name'],
     description: 'Force use of a specific server within the current backend if the condition is met.',
     sections: LB,
     since: '1.4',

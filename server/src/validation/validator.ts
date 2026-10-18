@@ -9,6 +9,7 @@ import { modeConflictRule } from './rules/modeRule';
 import { actionKeywordRule } from './rules/actionRule';
 import { timeoutValueRule } from './rules/timeoutRule';
 import { portRangeRule } from './rules/portRule';
+import { arityRule } from './rules/arityRule';
 
 const MAX_DIAGNOSTICS = 100;
 
@@ -23,6 +24,7 @@ const DIRECTIVE_RULES: readonly DirectiveRule[] = [
   actionKeywordRule,
   timeoutValueRule,
   portRangeRule,
+  arityRule,
 ];
 
 /**
