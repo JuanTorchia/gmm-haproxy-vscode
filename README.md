@@ -41,7 +41,7 @@ Context-aware suggestions that know which directives are valid in each section. 
 - Deprecated directives shown with strikethrough
 - Every suggestion includes signature and documentation
 
-![Autocompletion demo](docs/images/02-completion.gif)
+![Autocompletion demo](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/02-completion.gif)
 
 ---
 
@@ -52,18 +52,18 @@ Select your HAProxy version and get real-time diagnostics tailored to it. Direct
 - **Warnings** — deprecated directives with upgrade hints
 - **Cross-references** — `use_backend` pointing to an undefined backend
 
-![Validation diagnostics demo](docs/images/03-validation.gif)
+![Validation diagnostics demo](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/03-validation.gif)
 
 Focused demo config: [`docs/demo-configs/09-undefined-backend.cfg`](docs/demo-configs/09-undefined-backend.cfg)
 
-![Undefined backend diagnostic screenshot](docs/images/09-undefined-backend.gif)
+![Undefined backend diagnostic screenshot](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/09-undefined-backend.gif)
 
 ---
 
 ### Hover Documentation
 Hover over any directive for instant reference: signature, description, valid sections, version availability, and a direct link to the HAProxy docs.
 
-![Hover documentation demo](docs/images/04-hover.gif)
+![Hover documentation demo](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/04-hover.gif)
 
 ---
 
@@ -84,7 +84,7 @@ Put the cursor on a backend name — in its `backend` header or in any `use_back
 
 Rename also works for ACLs, servers, named `defaults`, caches, userlists, resolvers, and peers. Negated ACL references such as `!is_api` keep the `!`. Press `Ctrl+Enter` in the rename box to preview the edit before applying it.
 
-![Renaming a backend with F2 updates the backend header, both use_backend lines and default_backend](docs/images/10-rename.gif)
+![Renaming a backend with F2 updates the backend header, both use_backend lines and default_backend](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/10-rename.gif)
 
 Focused demo config: [`docs/demo-configs/10-rename.cfg`](docs/demo-configs/10-rename.cfg)
 
@@ -92,13 +92,13 @@ Focused demo config: [`docs/demo-configs/10-rename.cfg`](docs/demo-configs/10-re
 
 Press `Shift+F12` on a backend, ACL, or server name to peek every place it is defined and used, or `Shift+Alt+F12` to list them in the References panel. Placing the cursor on a name also highlights its definition and all of its references in the editor, so you can see at a glance which frontends route to a backend before you change or remove it.
 
-![Find all references on a backend shows its definition, two use_backend lines and a default_backend line](docs/images/11-references.png)
+![Find all references on a backend shows its definition, two use_backend lines and a default_backend line](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/11-references.png)
 
 #### Outline and Go to Symbol (`Ctrl+Shift+O`)
 
 The Outline view and breadcrumbs list every section — `global`, `defaults`, `frontend`, `backend`, `listen`, `userlist`, and the rest — with their `bind`, `acl`, and `server` lines nested underneath. Press `Ctrl+Shift+O` (`Cmd+Shift+O` on macOS) to jump to any section or server by name in a large config.
 
-![Outline view listing frontends, backends, binds, ACLs and servers of an HAProxy config](docs/images/12-outline.png)
+![Outline view listing frontends, backends, binds, ACLs and servers of an HAProxy config](https://raw.githubusercontent.com/JuanTorchia/gmm-haproxy-vscode-assets/main/12-outline.png)
 
 Rename, references, highlights, and symbols stay inside the current configuration file. Review the resulting diff before reloading production HAProxy.
 
