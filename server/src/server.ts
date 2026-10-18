@@ -29,7 +29,6 @@ import {
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { HaproxyParser } from './parser/parser';
-import { HaproxyDocument } from './parser/ast';
 import { ValidationProvider } from './validation/validator';
 import { CompletionProvider } from './completion/completionProvider';
 import { HoverProvider } from './hover/hoverProvider';
@@ -43,19 +42,18 @@ import { ServerSettings, DEFAULT_SETTINGS, parseServerSettings } from './setting
 import { DocumentHighlightProvider } from './highlights/documentHighlightProvider';
 import { ReferencesProvider } from './references/referencesProvider';
 import { RenameProvider } from './rename/renameProvider';
-import {
-  MAX_VALIDATION_LINE_COUNT,
-  OversizedDocumentTracker,
-  shouldSkipValidationForLineCount,
-} from './documentSizePolicy';
+import { MAX_VALIDATION_LINE_COUNT, shouldSkipValidationForLineCount } from './documentSizePolicy';
+import { DocumentState } from './documentState';
 import { hasConfigSections } from './configPresence';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments<TextDocument>(TextDocument);
 
-const astCache = new Map<string, HaproxyDocument>();
-const validationTimers = new Map<string, ReturnType<typeof setTimeout>>();
-const oversizedDocuments = new OversizedDocumentTracker();
+const VALIDATION_DEBOUNCE_MS = 400;
+
+const documentState = new DocumentState();
+const astCache = documentState.astCache;
+const oversizedDocuments = documentState.oversizedDocuments;
 
 let settings: ServerSettings = { ...DEFAULT_SETTINGS };
 let registry: VersionRegistry;
@@ -117,12 +115,16 @@ documents.onDidChangeContent((event) => {
 });
 
 documents.onDidClose((event) => {
-  astCache.delete(event.document.uri);
-  const timer = validationTimers.get(event.document.uri);
-  if (timer) clearTimeout(timer);
-  validationTimers.delete(event.document.uri);
-  oversizedDocuments.delete(event.document.uri);
+  documentState.release(event.document.uri);
   void connection.sendDiagnostics({ uri: event.document.uri, diagnostics: [] });
+});
+
+connection.onShutdown(() => {
+  documentState.releaseAll();
+});
+
+connection.onExit(() => {
+  documentState.releaseAll();
 });
 
 connection.onCompletion((params: TextDocumentPositionParams): CompletionItem[] => {
@@ -215,18 +217,10 @@ function parseDocument(doc: TextDocument): void {
 
 function scheduleValidation(doc: TextDocument): void {
   if (isOversizedDocument(doc)) {
-    clearPendingValidation(doc.uri);
+    documentState.clearPendingValidation(doc.uri);
     return;
   }
-  const existing = validationTimers.get(doc.uri);
-  if (existing) clearTimeout(existing);
-
-  const timer = setTimeout(() => {
-    validationTimers.delete(doc.uri);
-    validateDocument(doc);
-  }, 400);
-
-  validationTimers.set(doc.uri, timer);
+  documentState.scheduleValidation(doc.uri, VALIDATION_DEBOUNCE_MS, () => validateDocument(doc));
 }
 
 function validateDocument(doc: TextDocument): void {
@@ -263,7 +257,7 @@ function handleOversizedDocument(doc: TextDocument): boolean {
   }
 
   astCache.delete(doc.uri);
-  clearPendingValidation(doc.uri);
+  documentState.clearPendingValidation(doc.uri);
   void connection.sendDiagnostics({ uri: doc.uri, diagnostics: [] });
 
   if (oversizedDocuments.markSkipped(doc.uri)) {
@@ -277,12 +271,6 @@ function handleOversizedDocument(doc: TextDocument): boolean {
 
 function isOversizedDocument(doc: TextDocument): boolean {
   return shouldSkipValidationForLineCount(doc.lineCount);
-}
-
-function clearPendingValidation(uri: string): void {
-  const timer = validationTimers.get(uri);
-  if (timer) clearTimeout(timer);
-  validationTimers.delete(uri);
 }
 
 documents.listen(connection);
