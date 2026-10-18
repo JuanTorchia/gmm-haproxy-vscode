@@ -1,8 +1,15 @@
 import { Hover, MarkupKind, Position, Range } from 'vscode-languageserver/node';
 import { HaproxyDocument, HaproxySection, HaproxyDirective, SourceRange, Token } from '../parser/ast';
-import { VersionRegistry, DirectiveDefinition } from '../registry/versionRegistry';
-import { ACTIONS, ActionDef } from '../data/actions';
-import { FETCH_METHODS, PREDEFINED_ACLS, FetchMethodDef, PredefinedAcl } from '../data/acl';
+import { VersionRegistry } from '../registry/versionRegistry';
+import { ACTIONS } from '../data/actions';
+import { FETCH_METHODS, PREDEFINED_ACLS } from '../data/acl';
+import {
+  buildActionContent,
+  buildDirectiveContent,
+  buildFetchDeclContent,
+  buildFetchMethodContent,
+  buildPredefinedAclContent,
+} from './hoverContent';
 
 /**
  * Provides hover documentation for HAProxy directives, action sub-keywords,
@@ -28,8 +35,9 @@ export class HoverProvider {
           (combinedName ? this.registry.getDirective(combinedName, this.version) : undefined) ??
           this.registry.getDirective(kwName, this.version);
         if (!def) return null;
+        const isDeprecated = this.registry.isDeprecated(def.name, this.version);
         return {
-          contents: { kind: MarkupKind.Markdown, value: this.buildDirectiveContent(def, target.section) },
+          contents: { kind: MarkupKind.Markdown, value: buildDirectiveContent(def, target.section, isDeprecated) },
           range: toRange(target.directive.keyword.range),
         };
       }
@@ -38,7 +46,7 @@ export class HoverProvider {
         const action = ACTIONS.find((a) => a.name === target.name);
         if (!action) return null;
         return {
-          contents: { kind: MarkupKind.Markdown, value: this.buildActionContent(action, target.parentDirective) },
+          contents: { kind: MarkupKind.Markdown, value: buildActionContent(action, target.parentDirective) },
           range: toRange(target.token.range),
         };
       }
@@ -48,7 +56,7 @@ export class HoverProvider {
         const method = FETCH_METHODS.find((m) => m.name === target.name);
         if (method) {
           return {
-            contents: { kind: MarkupKind.Markdown, value: this.buildFetchMethodContent(method) },
+            contents: { kind: MarkupKind.Markdown, value: buildFetchMethodContent(method) },
             range: toRange(target.token.range),
           };
         }
@@ -56,7 +64,7 @@ export class HoverProvider {
         const parent = FETCH_METHODS.find((m) => m.aclDeclinations?.includes(target.name));
         if (parent) {
           return {
-            contents: { kind: MarkupKind.Markdown, value: this.buildFetchDeclContent(target.name, parent) },
+            contents: { kind: MarkupKind.Markdown, value: buildFetchDeclContent(target.name, parent) },
             range: toRange(target.token.range),
           };
         }
@@ -64,111 +72,13 @@ export class HoverProvider {
         const predef = PREDEFINED_ACLS.find((p) => p.name === target.name);
         if (predef) {
           return {
-            contents: { kind: MarkupKind.Markdown, value: this.buildPredefinedAclContent(predef) },
+            contents: { kind: MarkupKind.Markdown, value: buildPredefinedAclContent(predef) },
             range: toRange(target.token.range),
           };
         }
         return null;
       }
     }
-  }
-
-  // ── Hover content builders ───────────────────────────────────────────────
-
-  private buildDirectiveContent(def: DirectiveDefinition, section: HaproxySection): string {
-    const isDeprecated = this.registry.isDeprecated(def.name, this.version);
-    const lines: string[] = [];
-
-    lines.push(`**\`${def.name}\`** \`${def.signature}\``);
-    lines.push('---');
-    lines.push(def.description);
-    lines.push('');
-    lines.push(`**Valid in:** ${def.sections.join(', ')}`);
-
-    const versionParts: string[] = [`**Since:** HAProxy ${def.sinceVersion}`];
-    if (isDeprecated && def.deprecatedSinceVersion) {
-      versionParts.push(`~~**Deprecated in:** ${def.deprecatedSinceVersion}~~`);
-    }
-    if (def.removedInVersion) {
-      versionParts.push(`**Removed in:** ${def.removedInVersion}`);
-    }
-    lines.push(versionParts.join('  |  '));
-
-    if (def.httpOnly) lines.push('**Requires:** HTTP mode');
-    if (def.tcpOnly)  lines.push('**Requires:** TCP mode');
-    if (section.mode) lines.push(`**Current mode:** ${section.mode}`);
-
-    if (def.docsUrl) {
-      lines.push('');
-      lines.push(`[📖 HAProxy Docs](${def.docsUrl})`);
-    }
-
-    return lines.join('\n');
-  }
-
-  private buildActionContent(action: ActionDef, parentDirective: string): string {
-    const lines: string[] = [];
-
-    const sigPart = action.signature ? ` \`${action.signature}\`` : '';
-    lines.push(`**\`${action.name}\`**${sigPart}`);
-    lines.push('---');
-    lines.push(action.description);
-    lines.push('');
-    lines.push(`**Rule set:** \`${parentDirective}\``);
-    lines.push(`**Valid in:** ${describeRulesets(action.rulesets)}`);
-    lines.push(`**Since:** HAProxy ${action.since}`);
-
-    if (action.deprecated) {
-      lines.push(`~~**Deprecated in:** ${action.deprecated}~~`);
-    }
-
-    return lines.join('\n');
-  }
-
-  private buildFetchMethodContent(method: FetchMethodDef): string {
-    const lines: string[] = [];
-
-    const sigPart = method.signature ? `\`${method.signature}\`` : '';
-    lines.push(`**\`${method.name}\`** ${sigPart} → \`${method.outputType}\``);
-    lines.push('---');
-    lines.push(method.description);
-    lines.push('');
-    lines.push(`**Layer:** ${method.layer}  |  **Since:** HAProxy ${method.since}`);
-
-    if (method.aclDeclinations && method.aclDeclinations.length > 1) {
-      lines.push('');
-      lines.push(`**ACL variants:** \`${method.aclDeclinations.join('`  `')}\``);
-    }
-
-    return lines.join('\n');
-  }
-
-  private buildFetchDeclContent(declName: string, parent: FetchMethodDef): string {
-    const lines: string[] = [];
-
-    lines.push(`**\`${declName}\`** → \`${parent.outputType}\``);
-    lines.push('---');
-    lines.push(`ACL declination of \`${parent.name}\`.`);
-    lines.push('');
-    lines.push(parent.description);
-    lines.push('');
-    lines.push(`**Layer:** ${parent.layer}  |  **Since:** HAProxy ${parent.since}`);
-    lines.push('');
-    lines.push(`**All variants:** \`${(parent.aclDeclinations ?? [parent.name]).join('`  `')}\``);
-
-    return lines.join('\n');
-  }
-
-  private buildPredefinedAclContent(predef: PredefinedAcl): string {
-    const lines: string[] = [];
-
-    lines.push(`**\`${predef.name}\`** *(pre-defined ACL)*`);
-    lines.push('---');
-    lines.push(predef.description);
-    lines.push('');
-    lines.push(`**Equivalent to:** \`${predef.equivalent}\``);
-
-    return lines.join('\n');
   }
 
   // ── Target detection ─────────────────────────────────────────────────────
@@ -294,18 +204,4 @@ function toRange(r: SourceRange): Range {
 function stripFetchArgs(raw: string): string {
   const parenIndex = raw.indexOf('(');
   return parenIndex === -1 ? raw : raw.slice(0, parenIndex);
-}
-
-/** Human-readable ruleset summary for action hover. */
-function describeRulesets(rs: import('../data/actions').ActionRulesets): string {
-  const parts: string[] = [];
-  if (rs.httpReq)  parts.push('`http-request`');
-  if (rs.httpRes)  parts.push('`http-response`');
-  if (rs.httpAft)  parts.push('`http-after-response`');
-  if (rs.tcpRqCon) parts.push('`tcp-request connection`');
-  if (rs.tcpRqSes) parts.push('`tcp-request session`');
-  if (rs.tcpRqCnt) parts.push('`tcp-request content`');
-  if (rs.tcpRsCnt) parts.push('`tcp-response content`');
-  if (rs.quicIni)  parts.push('`quic-initial`');
-  return parts.join(', ');
 }

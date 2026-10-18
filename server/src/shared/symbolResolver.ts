@@ -147,9 +147,7 @@ export function collectOccurrences(doc: HaproxyDocument, symbol: ResolvedSymbol)
   return out;
 }
 
-export function containsPosition(range: SourceRange, pos: Position): boolean {
-  return contains(range, pos);
-}
+export { contains as containsPosition };
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
