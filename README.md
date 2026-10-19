@@ -175,6 +175,8 @@ Selecting a version that has reached end of life adds a warning diagnostic to th
 code --install-extension gmm.gmm-haproxy-vscode
 ```
 
+**In JetBrains IDEs** (IntelliJ IDEA, PyCharm and other IDEs based on 2026.1 or later): install [HAProxy Language Support](https://plugins.jetbrains.com/plugin/35273-haproxy-language-support) from the JetBrains Marketplace. It runs this extension's language server, so validation and documentation are the same in both editors. It needs Node.js. Source: [gmm-haproxy-jetbrains](https://github.com/JuanTorchia/gmm-haproxy-jetbrains).
+
 The extension recognizes `haproxy.cfg`, `haproxy.conf`, `haproxy*.cfg` and files under a `haproxy/` directory automatically. Other `.cfg` and `.conf` files switch to HAProxy only when they contain an HAProxy section header (`global`, `defaults`, `frontend`, `backend`, `listen`, …) at the start of a line; nginx, Samba, `setup.cfg` and other formats keep their own language. If another extension (nginx, Apache) already claims `.conf` files, that language takes priority. A language you pick manually is kept for the session. To force HAProxy for a file, add it to `files.associations`:
 
 ```json
