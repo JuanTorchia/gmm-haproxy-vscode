@@ -293,7 +293,7 @@ no-cross-provider-dependency rule still holds.
 - v1.0: first public release — must have all Must-have features + README + CI.
 - Semantic versioning strictly: MAJOR.MINOR.PATCH.
 - Changelog maintained in `CHANGELOG.md` following Keep a Changelog format.
-- Release notes written in English for marketplace; translated to Spanish in GitHub release body.
+- Release notes are written in English for both the Marketplace and the GitHub release body.
 
 ## Metrics for Success
 - Marketplace install count and rating.
@@ -665,5 +665,5 @@ Format: `type(scope): description`
 - `docs(readme)`: add GIF demo for completion
 
 ## Language Convention
-- Code, comments, variable names, commit messages: **English**
+- Everything committed to the repo is **English**: code, comments, docs, demo configs, commit messages, PRs, issues, release notes.
 - Communication with the user: **Spanish**
