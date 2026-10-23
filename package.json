@@ -2,7 +2,7 @@
   "name": "gmm-haproxy-vscode",
   "displayName": "HAProxy Config",
   "description": "Version-aware HAProxy 2.4–3.4 support with validation, completion, navigation, safe rename, hover docs, quick fixes, snippets, and formatting.",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "publisher": "gmm",
   "author": {
     "name": "Juan Torchia",
@@ -23,6 +23,9 @@
     "url": "https://github.com/JuanTorchia/gmm-haproxy-vscode/issues"
   },
   "homepage": "https://gmmhub.net/products/haproxy-config-vscode",
+  "sponsor": {
+    "url": "https://github.com/sponsors/JuanTorchia"
+  },
   "engines": {
     "vscode": "^1.110.0",
     "node": ">=24.0.0"

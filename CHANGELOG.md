@@ -8,6 +8,12 @@ See [docs/release.md](docs/release.md) for changelog and release-note rules.
 
 ## [Unreleased]
 
+## [0.7.1] — 2026-10-23
+
+### Changed
+- The README and Marketplace page link the JetBrains version of this extension, [HAProxy Language Support](https://plugins.jetbrains.com/plugin/35273-haproxy-language-support), which runs the same language server (#137).
+- The extension page shows a Sponsor link to GitHub Sponsors, and the README links the Open VSX review page alongside the VS Code Marketplace one (#140).
+
 ## [0.7.0] — 2026-10-18
 
 ### Added

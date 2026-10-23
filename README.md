@@ -279,7 +279,7 @@ Then press `F5` in VS Code to open an Extension Development Host with the extens
 
 If you use the Marketplace extension and notice missing HAProxy behavior, open an issue with a sanitized config snippet. Those reports directly improve completion, hover docs, and validation accuracy.
 
-**Rate / report issues** — if the extension helps you, [leave a review on the Marketplace](https://marketplace.visualstudio.com/items?itemName=gmm.gmm-haproxy-vscode&ssr=false#review-details); bugs and gaps go to [GitHub issues](https://github.com/JuanTorchia/gmm-haproxy-vscode/issues).
+**Rate / report issues** — if the extension helps you, leave a review on the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gmm.gmm-haproxy-vscode&ssr=false#review-details) or [Open VSX](https://open-vsx.org/extension/gmm/gmm-haproxy-vscode/reviews); bugs and gaps go to [GitHub issues](https://github.com/JuanTorchia/gmm-haproxy-vscode/issues).
 
 ---
 
