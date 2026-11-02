@@ -2,7 +2,7 @@
   "name": "gmm-haproxy-vscode",
   "displayName": "HAProxy Config",
   "description": "Version-aware HAProxy 2.4\u20133.4 support with validation, completion, navigation, safe rename, hover docs, quick fixes, snippets, and formatting.",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "publisher": "gmm",
   "author": {
     "name": "Juan Torchia",
@@ -197,7 +197,7 @@
     "esbuild": "0.28.2",
     "eslint": "10.13.0",
     "eslint-plugin-security": "4.2.0",
-    "glob": "13.0.6",
+    "glob": "14.0.3",
     "globals": "17.13.0",
     "jest": "30.5.2",
     "jest-util": "30.5.1",
@@ -210,9 +210,11 @@
     "vscode-languageserver-types": "3.18.4"
   },
   "overrides": {
-    "serialize-javascript": "7.0.5",
-    "minimatch": "10.2.6",
+    "serialize-javascript": "7.1.4",
     "brace-expansion": "^5.0.12",
-    "test-exclude": "^8.0.0"
+    "test-exclude": "^8.0.0",
+    "minimatch@<11": "10.2.6",
+    "glob": "$glob",
+    "qs": "6.17.1"
   }
 }

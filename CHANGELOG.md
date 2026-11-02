@@ -8,7 +8,10 @@ See [docs/release.md](docs/release.md) for changelog and release-note rules.
 
 ## [Unreleased]
 
+## [0.7.2] — 2026-11-02
+
 ### Security
+- Updated development-only qs, serialize-javascript and glob to patched releases. Glob uses its own minimatch 11 matcher; legacy tooling and the LSP client retain the verified API-compatible backport. Unpatched deepmerge remains limited to trusted Jest configuration (#150).
 - Backported the upstream minimatch preprocessing limits for GHSA-g3hv-75wg-m249 while retaining the `makeRe()` API used by the LSP client. Installation and packaging verify source hashes; raw dependency audits still report the unrecognized backport (#149).
 - Updated the publishing toolchain's Azure Identity dependency to 4.14.1 and MSAL Node to 7.1.2, resolving GHSA-xcx6-jx8p-x3h5 in development dependencies. The Marketplace authentication check now verifies the locked local publisher instead of downloading an unpinned version; extension runtime bundles are unaffected (#145).
 

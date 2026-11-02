@@ -30,6 +30,7 @@ const lock = JSON.parse(readFileSync(resolve(root, 'package-lock.json'), 'utf8')
 let count = 0;
 for (const [location, pkg] of Object.entries(lock.packages)) {
   if (!location.endsWith('node_modules/minimatch')) continue;
+  if (pkg.version === '11.0.4') continue; // Glob 14's patched matcher; no legacy API consumers.
   if (pkg.version !== '10.2.6') throw new Error(`Review minimatch ${pkg.version} before removing backport`);
   for (const [format, expected] of Object.entries(hashes)) {
     const file = resolve(root, location, 'dist', format, 'index.js');
