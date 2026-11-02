@@ -8,6 +8,9 @@ See [docs/release.md](docs/release.md) for changelog and release-note rules.
 
 ## [Unreleased]
 
+### Security
+- Updated the publishing toolchain's Azure Identity dependency to 4.14.1 and MSAL Node to 7.1.2, resolving GHSA-xcx6-jx8p-x3h5 in development dependencies. The Marketplace authentication check now verifies the locked local publisher instead of downloading an unpinned version; extension runtime bundles are unaffected (#145).
+
 ## [0.7.1] — 2026-10-23
 
 ### Changed
