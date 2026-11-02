@@ -1,7 +1,7 @@
 {
   "name": "gmm-haproxy-vscode",
   "displayName": "HAProxy Config",
-  "description": "Version-aware HAProxy 2.4–3.4 support with validation, completion, navigation, safe rename, hover docs, quick fixes, snippets, and formatting.",
+  "description": "Version-aware HAProxy 2.4\u20133.4 support with validation, completion, navigation, safe rename, hover docs, quick fixes, snippets, and formatting.",
   "version": "0.7.1",
   "publisher": "gmm",
   "author": {
@@ -167,7 +167,7 @@
   "scripts": {
     "vscode:prepublish": "npm run build",
     "compile": "tsc -b",
-    "build": "npm run build:client && npm run build:server",
+    "build": "node scripts/patch-minimatch.cjs && node scripts/patch-minimatch.cjs client && npm run build:client && npm run build:server",
     "build:client": "esbuild client/src/extension.ts --bundle --outfile=client/out/extension.js --external:vscode --format=cjs --platform=node",
     "build:server": "esbuild server/src/server.ts --bundle --outfile=server/out/server.js --format=cjs --platform=node",
     "watch": "npm run watch:client & npm run watch:server",
@@ -181,7 +181,8 @@
     "package": "vsce package",
     "package:check": "node scripts/check-vsix-contents.cjs",
     "demo:gifs": "node scripts/generate-demo-gifs.cjs",
-    "publish": "vsce publish"
+    "publish": "vsce publish",
+    "postinstall": "node scripts/patch-minimatch.cjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
@@ -210,7 +211,7 @@
   },
   "overrides": {
     "serialize-javascript": "7.0.5",
-    "minimatch": "^10.2.6",
+    "minimatch": "10.2.6",
     "brace-expansion": "^5.0.12",
     "test-exclude": "^8.0.0"
   }

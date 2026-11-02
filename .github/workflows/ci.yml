@@ -68,3 +68,12 @@ jobs:
 
       - name: Inspect package contents
         run: npm run package:check
+
+      - name: Retain reviewed VSIX
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v7
+        with:
+          name: haproxy-vsix
+          path: '*.vsix'
+          if-no-files-found: error
+          retention-days: 14
