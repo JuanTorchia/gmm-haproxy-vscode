@@ -10,15 +10,18 @@ const languageClientDirectory = dirname(clientRequire.resolve('vscode-languagecl
 const { matchGlobPattern } = clientRequire(join(languageClientDirectory, 'lib/common/utils/globPattern.js'));
 
 describe('language-client minimatch compatibility and amplification limits', () => {
-  it.each([
+  it('preserves matching through the LSP glob utility', () => {
+    const cases: Array<[string, string, boolean]> = [
     ['**/*.{cfg,conf}', '/etc/haproxy/haproxy.cfg', true],
     ['**/*.{cfg,conf}', '/etc/haproxy/backend.conf', true],
     ['**/*.{cfg,conf}', '/etc/haproxy/README.md', false],
     ['**/*.cfg', '/etc/haproxy/.private.cfg', false],
     ['**/haproxy/*.cfg', '/etc/nginx/default.cfg', false],
-  ])('matches LSP glob %s against %s', (pattern, fsPath, expected) => {
+    ];
+    for (const [pattern, fsPath, expected] of cases) {
     // Exercise the actual LSP call to makeRe(), not only the replacement library.
-    expect(matchGlobPattern(pattern, { fsPath })).toBe(expected);
+      expect(matchGlobPattern(pattern, { fsPath })).toBe(expected);
+    }
   });
 
   it('preserves file-operation dot/ignoreCase matching and makeRe', () => {
