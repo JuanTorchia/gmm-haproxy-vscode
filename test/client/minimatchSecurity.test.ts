@@ -7,7 +7,7 @@ jest.mock('vscode', () => ({}), { virtual: true });
 const clientRequire = createRequire(resolve('client/package.json'));
 const matcherPath = clientRequire.resolve('minimatch');
 const languageClientDirectory = dirname(clientRequire.resolve('vscode-languageclient/package.json'));
-const { matchGlobPattern } = require(join(languageClientDirectory, 'lib/common/utils/globPattern.js'));
+const { matchGlobPattern } = clientRequire(join(languageClientDirectory, 'lib/common/utils/globPattern.js'));
 
 describe('language-client minimatch compatibility and amplification limits', () => {
   it.each([
