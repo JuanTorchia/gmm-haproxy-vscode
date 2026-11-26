@@ -8,6 +8,9 @@ See [docs/release.md](docs/release.md) for changelog and release-note rules.
 
 ## [Unreleased]
 
+### Added
+- Added HAProxy Enterprise `dynamic-update` section support, including the `update` directive and editor features.
+
 ## [0.7.2] — 2026-11-02
 
 ### Security
