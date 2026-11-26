@@ -520,6 +520,11 @@ describe('ValidationProvider', () => {
       expect(validate(text).filter((d) => d.message.toLowerCase().includes('unknown'))).toHaveLength(0);
     });
 
+    it('dynamic-update section: update is valid', () => {
+      const text = 'dynamic-update\n    update id /etc/haproxy/redirects.map map url http://192.0.2.1/redirects.map delay 5m\n';
+      expect(validate(text).filter((d) => d.message.toLowerCase().includes('unknown'))).toHaveLength(0);
+    });
+
     it('program section: command is valid', () => {
       const text = 'program agent\n    command /usr/bin/haproxy-agent\n';
       expect(validate(text).filter((d) => d.message.includes('command'))).toHaveLength(0);

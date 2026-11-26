@@ -2,7 +2,7 @@
 export const DETECTION_LINE_LIMIT = 200;
 
 const SECTION_HEADER =
-  /^(global|defaults|frontend|backend|listen|userlist|peers|resolvers|mailers|ring|log-forward|program|http-errors|cache|acme)(?=\s|$)(?!\s*[=:])/;
+  /^(global|defaults|frontend|backend|listen|userlist|peers|resolvers|mailers|ring|log-forward|program|http-errors|cache|acme|dynamic-update)(?=\s|$)(?!\s*[=:])/;
 
 const GENERIC_LANGUAGES = new Set(['plaintext', 'ini', 'properties']);
 const CANDIDATE_EXTENSION = /\.(cfg|conf)$/i;

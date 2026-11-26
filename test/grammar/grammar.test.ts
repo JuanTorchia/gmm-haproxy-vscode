@@ -208,7 +208,7 @@ describe('HAProxy grammar — key pattern spot-checks', () => {
     const re = new RegExp(rule.match);
     for (const kw of ['global', 'defaults', 'frontend', 'backend', 'listen',
                        'userlist', 'peers', 'resolvers', 'mailers', 'ring',
-                       'log-forward', 'program', 'http-errors', 'cache']) {
+                       'log-forward', 'program', 'http-errors', 'cache', 'dynamic-update']) {
       expect(re.test(kw)).toBe(true);
     }
   });

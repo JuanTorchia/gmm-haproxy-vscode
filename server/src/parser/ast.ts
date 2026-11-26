@@ -44,6 +44,7 @@ export type SectionType =
   | 'http-errors'
   | 'cache'
   | 'acme'
+  | 'dynamic-update'
   | 'unknown';
 
 /** A section block, e.g. `frontend http-in` with all its directives. */

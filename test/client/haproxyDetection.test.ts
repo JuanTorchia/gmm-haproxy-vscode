@@ -16,7 +16,7 @@ describe('looksLikeHaproxyConfig', () => {
 
   it('detects every documented section keyword', () => {
     for (const kw of ['global', 'defaults', 'frontend', 'backend', 'listen', 'userlist', 'peers',
-      'resolvers', 'mailers', 'ring', 'log-forward', 'program', 'http-errors', 'cache', 'acme']) {
+      'resolvers', 'mailers', 'ring', 'log-forward', 'program', 'http-errors', 'cache', 'acme', 'dynamic-update']) {
       expect(looksLikeHaproxyConfig(`${kw} x\n`)).toBe(true);
     }
   });

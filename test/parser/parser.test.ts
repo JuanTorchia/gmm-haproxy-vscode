@@ -36,6 +36,17 @@ describe('HaproxyParser', () => {
     expect(doc.sections[1]?.name).toBe('web');
   });
 
+  it('parses dynamic-update sections', () => {
+    const text = [
+      'dynamic-update',
+      '    update id /etc/haproxy/redirects.map map url http://192.0.2.1/redirects.map delay 5m',
+    ].join('\n');
+    const doc = parser.parse(text, 'test://dynamic-update');
+    expect(doc.sections).toHaveLength(1);
+    expect(doc.sections[0]?.type).toBe('dynamic-update');
+    expect(doc.sections[0]?.directives[0]?.keyword.value).toBe('update');
+  });
+
   it('strips inline comments', () => {
     const text = `global\n    maxconn 50000 # this is a comment\n`;
     const doc = parser.parse(text, 'test://comment');
