@@ -21,6 +21,7 @@ const SECTION_SYMBOL_KIND: Record<SectionType, SymbolKind> = {
   'http-errors':SymbolKind.Module,
   cache:        SymbolKind.Module,
   acme:         SymbolKind.Module,
+  'dynamic-update': SymbolKind.Module,
   unknown:      SymbolKind.Module,
 };
 

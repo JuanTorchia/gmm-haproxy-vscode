@@ -20,6 +20,7 @@ const SECTION_KEYWORDS: SectionType[] = [
   'global', 'defaults', 'frontend', 'backend', 'listen',
   'userlist', 'peers', 'resolvers', 'mailers', 'ring',
   'log-forward', 'program', 'http-errors', 'cache', 'acme',
+  'dynamic-update',
 ];
 
 /**

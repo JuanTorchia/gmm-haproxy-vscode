@@ -68,7 +68,7 @@ describe('FormattingProvider', () => {
     it('handles all section types at column 0', () => {
       const sections = ['global', 'defaults', 'frontend', 'backend', 'listen',
         'userlist', 'peers', 'resolvers', 'mailers', 'ring',
-        'log-forward', 'program', 'http-errors', 'cache'];
+        'log-forward', 'program', 'http-errors', 'cache', 'dynamic-update'];
       for (const s of sections) {
         const result = format(`  ${s} test\n    maxconn 1000\n`);
         expect(result).toMatch(new RegExp(`^${s}`, 'm'));

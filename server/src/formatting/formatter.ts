@@ -5,6 +5,7 @@ const SECTION_KEYWORDS = new Set([
   'global', 'defaults', 'frontend', 'backend', 'listen',
   'userlist', 'peers', 'resolvers', 'mailers', 'ring',
   'log-forward', 'program', 'http-errors', 'cache', 'acme',
+  'dynamic-update',
 ]);
 
 /**

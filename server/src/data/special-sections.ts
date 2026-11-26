@@ -1,7 +1,7 @@
 /**
  * Directive definitions for HAProxy non-proxy sections:
  * peers, resolvers, userlist, mailers, ring, log-forward, program,
- * http-errors, and cache.
+ * http-errors, cache, acme, and dynamic-update.
  *
  * These sections don't follow the proxy keyword matrix and are
  * modelled separately from directives.ts.
@@ -384,6 +384,19 @@ const CACHE: SpecialSectionDef[] = [
   },
 ];
 
+// ─── DYNAMIC-UPDATE ──────────────────────────────────────────────────────────
+
+const DYNAMIC_UPDATE: SpecialSectionDef[] = [
+  {
+    name: 'update',
+    sections: ['dynamic-update'],
+    signature: 'update id <id> url <url> [delay <delay> | xdelay <delay> <start> <next> <retry>] [timeout <timeout>] [retries <number>] [modified | xmodified] [source <addr>[:<port>]] [log] [dontlog-normal] [map] [purge <count> [<interval> [<id>]]] [tls-ticket-keys] [param*]',
+    description: 'Periodically download ACL, map, or TLS ticket key file updates without reloading HAProxy.',
+    since: '2.6',
+    docsUrl: 'https://www.haproxy.com/documentation/haproxy-enterprise/enterprise-modules/dynamic-updates/',
+  },
+];
+
 /** All special-section directives, consolidated. */
 export const SPECIAL_SECTION_DIRECTIVES: SpecialSectionDef[] = [
   ...PEERS,
@@ -395,4 +408,5 @@ export const SPECIAL_SECTION_DIRECTIVES: SpecialSectionDef[] = [
   ...PROGRAM,
   ...HTTP_ERRORS,
   ...CACHE,
+  ...DYNAMIC_UPDATE,
 ];
